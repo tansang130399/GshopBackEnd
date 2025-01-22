@@ -59,4 +59,24 @@ router.put("/update/:id", async (req, res, next) => {
   }
 });
 
+//* Xóa danh mục
+router.delete("/delete/:id", async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const deletedCategory = await categoryModel.findByIdAndDelete(id);
+
+    if (!deletedCategory) {
+      return res.json({
+        status: false,
+        mess: "Không tìm thấy danh mục để xóa",
+      });
+    }
+
+    res.json({ status: true, mess: "Danh mục đã được xóa thành công" });
+  } catch (error) {
+    res.json({ status: false, mess: error.message });
+  }
+});
+
 module.exports = router;
