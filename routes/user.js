@@ -44,11 +44,11 @@ router.post("/register", async (req, res) => {
   }
 });
 
-//* lấy danh sách user theo id
-router.get("/user/:id", async (req, res) => {
-  const { id } = req.params;
+//* lấy user theo email
+router.get("/user/:email", async (req, res) => {
+  const { email } = req.params;
   try {
-    const user = await userModel.findById(id);
+    const user = await userModel.find({ email: email });
 
     if (!user) {
       return res.json({ status: false, message: "User not found!" });
@@ -76,14 +76,12 @@ router.get("/list", async (req, res, next) => {
 });
 
 //* Cập nhật user
-router.put("/update/:id", async (req, res) => {
-  const { id } = req.params;
+router.put("/update", async (req, res) => {
   const { email, fullName, phoneNumber, password } = req.body;
 
   try {
-    const user = await userModel.findById(id);
+    const user = await userModel.find({ email: email });
 
-    user.email = email || user.email;
     user.fullName = fullName || user.fullName;
     user.phoneNumber = phoneNumber || user.phoneNumber;
     user.password = password || user.password;

@@ -39,8 +39,7 @@ const supplierSchema = new Schema({
     trim: true,
   },
   status: {
-    type: String,
-    enum: ["active", "inactive"],
+    type: Boolean,
     required: true,
   },
 });
