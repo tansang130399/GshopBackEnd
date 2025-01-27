@@ -3,6 +3,16 @@ var express = require("express");
 var path = require("path");
 var cookieParser = require("cookie-parser");
 var logger = require("morgan");
+const cors = require("cors"); // Cài đặt thư viện cors: npm install cors
+
+// Cấu hình CORS
+app.use(
+  cors({
+    origin: "http://localhost:3000", // Cho phép yêu cầu từ origin này
+    methods: ["GET", "POST", "PUT", "DELETE"], // Các phương thức được phép
+    credentials: true, // Cho phép gửi cookie hoặc header xác thực
+  })
+);
 
 //*config mongoose
 const mongoose = require("mongoose");
