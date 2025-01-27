@@ -1,5 +1,6 @@
 var createError = require("http-errors");
 var express = require("express");
+var app = express();
 var path = require("path");
 var cookieParser = require("cookie-parser");
 var logger = require("morgan");
@@ -30,8 +31,6 @@ var orderRouter = require("./routes/order");
 var paymentMethodRouter = require("./routes/payment");
 var detailOrderRouter = require("./routes/detail_order");
 var ratingRouter = require("./routes/rating");
-
-var app = express();
 
 // view engine setup
 app.set("views", path.join(__dirname, "views"));
