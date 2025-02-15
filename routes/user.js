@@ -110,4 +110,27 @@ router.put("/update", async (req, res) => {
   }
 });
 
+
+// Lấy danh sách user theo staff
+router.get("/list_staff", async (req, res, next) => {
+  try {
+    const { role } = req.query; // Lấy role từ query params
+    
+    let filter = {};
+    if (role) {
+      filter.role = role; // Lọc user theo role nếu có
+    }
+    
+    const data = await userModel.find(filter);
+    
+    if (data.length > 0) {
+      res.json({ status: true, data: data });
+    } else {
+      res.json({ status: false, mess: "Không có danh sách user phù hợp" });
+    }
+  } catch (error) {
+    res.json({ status: false, mess: error.message });
+  }
+});
+
 module.exports = router;
