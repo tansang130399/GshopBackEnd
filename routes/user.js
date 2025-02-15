@@ -6,19 +6,34 @@ var router = express.Router();
 
 //* Đăng nhập
 router.post("/login", async (req, res) => {
-  const { email, password } = req.body;
+  const { email, phone_number, password } = req.body;
   try {
-    const user = await userModel.findOne({ email });
+    // const user = await userModel.findOne({ email, phone_number });
 
-    if (!user) {
-      return res.json({ status: false, message: "User not found" });
+    var checkUser = await userModel.findOne({
+      $or: [{email}, {phone_number}],
+      password: password
+    })
+
+    if(checkUser){
+      res.status(200).json({
+        status: true,
+        message: 'Đăng nhập thành công',
+        data: checkUser
+      })
+    }else{
+      res.status(400).json('Email/SĐT hoặc Mật khẩu sai')
     }
 
-    if (password != user.password) {
-      return res.json({ status: false, message: "Invalid credentials" });
-    }
+    // if (!checkUser) {
+    //   return res.json({ status: false, message: "User not found" });
+    // }
 
-    res.json({ status: true, data: user });
+    // if (password != checkUser.password) {
+    //   return res.json({ status: false, message: "Invalid credentials" });
+    // }
+
+    //res.json({ status: true, data: checkUser });
   } catch (error) {
     console.error(error);
     res.json({ status: false, message: error.message });
