@@ -13,7 +13,7 @@ router.post("/login", async (req, res) => {
     var checkUser = await userModel.findOne({
       $or: [{ email }, { phone_number }],
       password: password
-    })
+    });
 
     if (checkUser) {
       res.status(200).json({
@@ -42,20 +42,42 @@ router.post("/login", async (req, res) => {
 
 //* Đăng ký
 router.post("/register", async (req, res) => {
-  const { email, password, fullName, phoneNumber } = req.body;
-  try {
-    const existingUser = await userModel.findOne({ email });
+  const { email, password, name, phone_number } = req.body;
 
+  try {
+    // const existingUser = await userModel.findOne({ email });
+
+    // if (existingUser) {
+    //   return res.json({ status: false, message: "User already exists" });
+    // }
+
+    // await userModel.create({ email, password, fullName, phoneNumber });
+
+    // res.json({ status: true, message: "Registration successful" });
+
+    // Kiểm tra xem email hoặc phone đã tồn tại chưa
+    const existingUser = await userModel.findOne({ $or: [{ email }, { phone_number }] });
     if (existingUser) {
-      return res.json({ status: false, message: "User already exists" });
+      return res.status(400).json({ status: false, message: 'Email hoặc Số điện thoại đã tồn tại' })
+    };
+
+    // Kiểm tra mật khẩu
+    const checkPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+    if(!checkPassword.test(password)){
+      return res.status(400).json({
+        status: false,
+        message: 'Mật khẩu phải chứa ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường và số'
+      })
     }
 
-    await userModel.create({ email, password, fullName, phoneNumber });
+    // Tạo đối tượng
+    const objectUser = { email, password, name, phone_number };
+    await userModel.create(objectUser);
 
-    res.json({ status: true, message: "Registration successful" });
+    res.status(200).json({ status: true, message: 'Đăng ký thành công' });
   } catch (error) {
     console.error(error);
-    res.json({ status: false, message: error.message });
+    res.status(404).json({ status: false, message: error.message });
   }
 });
 
@@ -110,27 +132,7 @@ router.put("/update", async (req, res) => {
   }
 });
 
+// Lấy danh sách user theo role
 
-// Lấy danh sách user theo staff
-router.get("/list_staff", async (req, res, next) => {
-  try {
-    const { role } = req.query; // Lấy role từ query params
-    
-    let filter = {};
-    if (role) {
-      filter.role = role; // Lọc user theo role nếu có
-    }
-    
-    const data = await userModel.find(filter);
-    
-    if (data.length > 0) {
-      res.json({ status: true, data: data });
-    } else {
-      res.json({ status: false, mess: "Không có danh sách user phù hợp" });
-    }
-  } catch (error) {
-    res.json({ status: false, mess: error.message });
-  }
-});
 
 module.exports = router;
