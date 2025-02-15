@@ -11,18 +11,18 @@ router.post("/login", async (req, res) => {
     // const user = await userModel.findOne({ email, phone_number });
 
     var checkUser = await userModel.findOne({
-      $or: [{email}, {phone_number}],
+      $or: [{ email }, { phone_number }],
       password: password
     })
 
-    if(checkUser){
+    if (checkUser) {
       res.status(200).json({
         status: true,
         message: 'Đăng nhập thành công',
         data: checkUser
       })
-    }else{
-      res.status(400).json('Email/SĐT hoặc Mật khẩu sai')
+    } else {
+      res.status(400).json({ status: false, message: 'Email/SĐT hoặc Mật khẩu sai' })
     }
 
     // if (!checkUser) {
@@ -36,7 +36,7 @@ router.post("/login", async (req, res) => {
     //res.json({ status: true, data: checkUser });
   } catch (error) {
     console.error(error);
-    res.json({ status: false, message: error.message });
+    res.status(404).json({ status: false, message: error.message });
   }
 });
 
