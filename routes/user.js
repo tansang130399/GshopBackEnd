@@ -11,11 +11,11 @@ router.post("/login", async (req, res) => {
     const user = await userModel.findOne({ email });
 
     if (!user) {
-      return res.json({ status: false, message: "User not found!" });
+      return res.json({ status: false, message: "User not found" });
     }
 
     if (password != user.password) {
-      return res.json({ status: false, message: "Invalid credentials!" });
+      return res.json({ status: false, message: "Invalid credentials" });
     }
 
     res.json({ status: true, data: user });
@@ -32,12 +32,12 @@ router.post("/register", async (req, res) => {
     const existingUser = await userModel.findOne({ email });
 
     if (existingUser) {
-      return res.json({ status: false, message: "User already exists!" });
+      return res.json({ status: false, message: "User already exists" });
     }
 
     await userModel.create({ email, password, fullName, phoneNumber });
 
-    res.json({ status: true, message: "Registration successful!" });
+    res.json({ status: true, message: "Registration successful" });
   } catch (error) {
     console.error(error);
     res.json({ status: false, message: error.message });
@@ -51,7 +51,7 @@ router.get("/user/:email", async (req, res) => {
     const user = await userModel.find({ email: email });
 
     if (!user) {
-      return res.json({ status: false, message: "User not found!" });
+      return res.json({ status: false, message: "User not found" });
     }
 
     res.json({ status: true, data: user });
@@ -88,7 +88,7 @@ router.put("/update", async (req, res) => {
 
     await user.save();
 
-    res.json({ status: true, message: "User updated successfully!" });
+    res.json({ status: true, message: "User updated successfully" });
   } catch (error) {
     console.error(error);
     res.json({ status: false, message: error.message });
