@@ -4,13 +4,13 @@ const ObjectId = Schema.ObjectId;
 
 const newsSchema = new Schema({
   id: {
-    type: ObjectId,
-    required: true,
+    type: ObjectId
   },
 
   images: {
     type: [String],
-    default: "Unknown"
+    default: ["Unknown"],
+    required: true
   },
 
   title: {
@@ -25,14 +25,14 @@ const newsSchema = new Schema({
 
   date: {
     type: String,
-    required: true,
     default: () => new Date().toLocaleDateString("en-GB")
   },
 
   id_user: {
     type: ObjectId,
     ref: "user",
-    default: "Unknow"
+    default: "Unknow",
+    required: true,
   },
 });
 

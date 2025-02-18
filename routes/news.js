@@ -31,19 +31,19 @@ var router = express.Router();
 
 router.post('/add', async (req, res) => {
   try {
-    const {images, title, content} = req.body;
+    const { images, title, content, id_user } = req.body;
 
-    // Đảo bảo images là mảng
-    if(!Array.isArray(images)){
-      images = [images]
+    // Đảm bảo image là mảng
+    if (!Array.isArray(images)) {
+      images = [images];
     }
 
-    const objectNews = {images, title, content};
+    const objectNews = { images, title, content, id_user };
     await newsModel.create(objectNews);
 
     res.status(200).json({ status: true, message: 'Thêm thành công' });
   } catch (e) {
-    res.status(404).json({ status: false, message: 'Thêm thất bại' });
+    res.status(404).json({ status: false, message: 'Thêm thất bại tin tưccsa' });
   }
 })
 
