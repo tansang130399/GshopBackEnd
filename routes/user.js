@@ -63,7 +63,7 @@ router.post("/register", async (req, res) => {
 
     // Kiểm tra mật khẩu
     const checkPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
-    if(!checkPassword.test(password)){
+    if (!checkPassword.test(password)) {
       return res.status(400).json({
         status: false,
         message: 'Mật khẩu phải chứa ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường và số'
@@ -132,7 +132,56 @@ router.put("/update", async (req, res) => {
   }
 });
 
-// Lấy danh sách user theo role
+// Lấy danh sách user theo role nhập vào
+router.get("/list_userByRole", async (req, res) => {
+  try {
+    const { role } = req.query;
+
+    if (!role) {
+      res.status(400).json({ status: false, message: "Chưa nhập role" });
+    }
+
+    const data = await userModel.find({ role });
+    if (data) {
+      res.status(200).json({ status: true, data: data });
+    } else {
+      res.status(400).json({ status: false, message: "Không tìm thấy" });
+    }
+  } catch (e) {
+    res.status(404).json({ status: false, message: e });
+  }
+});
+
+// Lấy danh sách user theo từng role
+// Role Admin
+router.get("/list_admin", async (req, res) => {
+  try {
+    const admin = await userModel.find({ role: "admin" });
+    res.status(200).json({ status: true, data: admin });
+  } catch (e) {
+    res.status(404).json({status: false, message: e})
+  }
+});
+
+// Role Staff
+router.get("/list_staff", async (req, res) => {
+  try {
+    const staff = await userModel.find({ role: "staff" });
+    res.status(200).json({ status: true, data: staff });
+  } catch (e) {
+    res.status(404).json({status: false, message: e})
+  }
+});
+
+// Role User
+router.get("/list_user", async (req, res) => {
+  try {
+    const user = await userModel.find({ role: "user" });
+    res.status(200).json({ status: true, data: user });
+  } catch (e) {
+    res.status(404).json({status: false, message: e})
+  }
+});
 
 
 module.exports = router;
