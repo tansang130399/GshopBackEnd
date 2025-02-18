@@ -3,7 +3,6 @@ const userModel = require("../models/userModel");
 var router = express.Router();
 
 //* /user
-
 //* Đăng nhập
 router.post("/login", async (req, res) => {
   const { email, phone_number, password } = req.body;
@@ -182,6 +181,5 @@ router.get("/list_user", async (req, res) => {
     res.status(404).json({status: false, message: e})
   }
 });
-
 
 module.exports = router;
