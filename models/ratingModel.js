@@ -3,10 +3,13 @@ const Schema = mongoose.Schema;
 const ObjectId = Schema.ObjectId;
 
 const ratingSchema = new Schema({
-  id: { type: ObjectId, required: true },
+  id: { type: ObjectId },
   star: { type: Number, required: true, min: 1, max: 5 },
-  date: { type: String },
-  content: { type: String, required: false },
+  date: {
+    type: String,
+    default: () => new Date().toLocaleDateString("en-GB")
+  },
+  content: { type: String, required: true },
   id_user: {
     type: ObjectId,
     ref: "user",
@@ -18,5 +21,4 @@ const ratingSchema = new Schema({
 });
 
 const Rating = mongoose.model("rating", ratingSchema);
-
 module.exports = mongoose.models.rating || Rating;

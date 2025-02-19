@@ -3,7 +3,6 @@ const newsModel = require("../models/newsModel");
 var router = express.Router();
 
 // news
-
 // Thêm tin tức
 router.post('/add', async (req, res) => {
   try {
