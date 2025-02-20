@@ -158,7 +158,7 @@ router.get("/list_admin", async (req, res) => {
     const admin = await userModel.find({ role: "admin" });
     res.status(200).json({ status: true, data: admin });
   } catch (e) {
-    res.status(404).json({status: false, message: e})
+    res.status(404).json({ status: false, message: e })
   }
 });
 
@@ -168,7 +168,7 @@ router.get("/list_staff", async (req, res) => {
     const staff = await userModel.find({ role: "staff" });
     res.status(200).json({ status: true, data: staff });
   } catch (e) {
-    res.status(404).json({status: false, message: e})
+    res.status(404).json({ status: false, message: e })
   }
 });
 
@@ -178,8 +178,32 @@ router.get("/list_user", async (req, res) => {
     const user = await userModel.find({ role: "user" });
     res.status(200).json({ status: true, data: user });
   } catch (e) {
-    res.status(404).json({status: false, message: e})
+    res.status(404).json({ status: false, message: e })
   }
 });
+
+// Đổi mật khẩu
+router.put("/changPass", async (req, res) => {
+  try {
+    const { userId, newPassword, confirmPassword } = req.body;
+
+    // Kiểm tra user có tồn tại không
+    const user = await userModel.findById(userId);
+    if (!user) {
+      return res.status(404).json({ status: false, message: "Người dùng không tồn tại" });
+    }
+
+    // Kiểm tra mật khẩu nhập lại có khớp không
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({ status: false, message: "Mật khẩu mới nhập lại không khớp" });
+    }
+
+    // Cập nhật lại mật khẩu user
+    await userModel.findByIdAndUpdate(userId, { password: newPassword });
+    return res.status(200).json({ status: true, message: "Đổi mật khẩu thành công" });
+  } catch (e) {
+    return res.status(404).json({ status: false, message: "Đổi mật khẩu thất bại" });
+  }
+})
 
 module.exports = router;
