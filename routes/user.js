@@ -206,4 +206,15 @@ router.put("/changPass", async (req, res) => {
   }
 })
 
+// Lấy thông tin chi tiết của user
+router.get("/detail_user", async (req, res) => {
+  try {
+    const { _id } = req.query;
+    const detail = await userModel.findOne({ _id: _id });
+    res.status(200).json({ status: true, data: detail });
+  } catch (e) {
+    res.status(404).json({ status: false, message: e });
+  }
+})
+
 module.exports = router;
