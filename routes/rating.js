@@ -88,7 +88,7 @@ router.get('/detail_rate', async (req, res) => {
   }
 });
 
-// Xóa tin tức
+// Xóa đánh giá
 router.delete('/delete', async (req, res) => {
   try {
     const { _id } = req.query;
