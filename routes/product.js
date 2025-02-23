@@ -145,4 +145,26 @@ router.put("/update/:id", async (req, res, next) => {
   }
 });
 
+//* Cập nhật view của sản phẩm
+router.put("/update_view", async (req, res) => {
+  try {
+    const { id } = req.query;
+
+    // Tìm và tăng giá trị viewer lên 1
+    const product = await productModel.findByIdAndUpdate(
+      id,
+      { $inc: { viewer: 1 } }, // Tăng viewer lên 1 mỗi lần gọi API
+      { new: true }
+    );
+
+    if (!product) {
+      return res.status(400).json({ status: false, message: 'Sản phẩm không tồn tại' });
+    }
+
+    res.status(200).json({ status: true, message: 'Lượt xem đã được cập nhật', product });
+  } catch (e) {
+    res.status(404).json({status: false, message: 'Lỗi cập nhật lượt xem'});
+  }
+});
+
 module.exports = router;
