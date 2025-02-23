@@ -185,7 +185,7 @@ router.put("/update_status", async (req, res) => {
     product.status = getStatus(product);
 
     // Lưu sản phẩm
-    await product.save
+    await product.save()
     res.status(200).json({ status: true, message: 'Cập nhật thành công', data: product })
   } catch (e) {
     res.status(404).json({ status: false, message: 'Cập nhật thất bại' })
