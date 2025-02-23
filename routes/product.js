@@ -163,8 +163,42 @@ router.put("/update_view", async (req, res) => {
 
     res.status(200).json({ status: true, message: 'Lượt xem đã được cập nhật', product });
   } catch (e) {
-    res.status(404).json({status: false, message: 'Lỗi cập nhật lượt xem'});
+    res.status(404).json({ status: false, message: 'Lỗi cập nhật lượt xem' });
   }
 });
+
+//* Cập nhật status và isActive của sản phẩm (để test kiểm thử)
+router.put("/update_status", async (req, res) => {
+  try {
+    const {id} = req.query;
+    const {isActive, quantity} = req.body;
+
+    // Kiểm tra xem sản phẩm có tồn tại không
+    const product = await productModel.findById(id);
+    if(!product){
+      return res.status(404).json({ message: "Sản phẩm không tồn tại" });
+    }
+
+    // Cập nhật thông tin sản phẩm
+    if(isActive !== undefined) product.isActive = isActive;
+    if(quantity !== undefined) product.quantity = quantity;
+    product.status = getStatus(product);
+
+    // Lưu sản phẩm
+    await product.save
+    res.status(200).json({ status: true, message: 'Cập nhật thành công', data: product })
+  } catch (e) {
+    res.status(404).json({ status: false, message: 'Cập nhật thất bại' })
+  }
+});
+
+// Hàm xác định trạng thái của sản phẩm
+function getStatus(product) {
+  if (!product.isActive) return "Ngừng kinh doanh";
+  if (product.quantity === 0) return "Hết hàng";
+  return product.quantity <= 10
+    ? `Chỉ còn ${product.quantity} bộ`
+    : `Còn ${product.quantity} bộ`;
+}
 
 module.exports = router;
