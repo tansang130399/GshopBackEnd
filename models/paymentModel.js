@@ -3,7 +3,7 @@ const Schema = mongoose.Schema;
 const ObjectId = Schema.ObjectId;
 
 const paymentSchema = new Schema({
-  id: { type: ObjectId, required: true },
+  id: { type: ObjectId },
   image: { type: String, required: true },
   name: { type: String, required: true },
 });

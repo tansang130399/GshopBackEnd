@@ -3,10 +3,7 @@ const Schema = mongoose.Schema;
 const ObjectId = Schema.ObjectId;
 
 const supplierSchema = new Schema({
-  id: {
-    type: ObjectId,
-    required: true,
-  },
+  id: { type: ObjectId },
   name: {
     type: String,
     required: true,

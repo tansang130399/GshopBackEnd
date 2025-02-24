@@ -3,7 +3,7 @@ const Schema = mongoose.Schema;
 const ObjectId = Schema.ObjectId;
 
 const orderSchema = new Schema({
-  idid: { type: ObjectId, required: true },
+  id: { type: ObjectId },
   date: { type: String },
   total_price: { type: Number, required: true },
   shipping_fee: { type: Number, required: true },

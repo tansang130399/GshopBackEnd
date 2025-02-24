@@ -3,7 +3,7 @@ const Schema = mongoose.Schema;
 const ObjectId = Schema.ObjectId;
 
 const imageProductSchema = new Schema({
-  id: { type: ObjectId, required: true },
+  id: { type: ObjectId },
   image: { type: [String], required: true },
   id_product: {
     type: ObjectId,

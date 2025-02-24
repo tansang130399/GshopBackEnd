@@ -3,7 +3,7 @@ const Schema = mongoose.Schema;
 const ObjectId = Schema.ObjectId;
 
 const productSchema = new Schema({
-  id: { type: ObjectId, required: true },
+  id: { type: ObjectId },
   name: { type: String, required: true },
   price: { type: Number, required: true },
   quantity: { type: Number, required: true },
@@ -41,8 +41,8 @@ function getStatus(product) {
   if (!product.isActive) return "Ngừng kinh doanh";
   if (product.quantity === 0) return "Hết hàng";
   return product.quantity <= 10
-   ? `Chỉ còn ${product.quantity} bộ`
-   : `Còn ${product.quantity} bộ`
+    ? `Chỉ còn ${product.quantity} bộ`
+    : `Còn ${product.quantity} bộ`;
 }
 
 const Product = mongoose.model("product", productSchema);

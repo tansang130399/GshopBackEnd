@@ -5,7 +5,6 @@ const ObjectId = Schema.ObjectId;
 const AddressDeliverySchema = new Schema({
   id: {
     type: ObjectId,
-    required: true,
   },
   detail: {
     type: String,
