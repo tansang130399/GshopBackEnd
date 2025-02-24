@@ -191,13 +191,4 @@ router.put("/update_status", async (req, res) => {
   }
 });
 
-// Hàm xác định trạng thái của sản phẩm
-function getStatus(product) {
-  if (!product.isActive) return "Ngừng kinh doanh";
-  if (product.quantity === 0) return "Hết hàng";
-  return product.quantity <= 10
-    ? `Chỉ còn ${product.quantity} bộ`
-    : `Còn ${product.quantity} bộ`;
-}
-
 module.exports = router;
