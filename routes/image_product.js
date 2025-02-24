@@ -1,7 +1,7 @@
 var express = require("express");
-const imageProductModel = require("../models/imageProductModel");
 var router = express.Router();
-
+const imageProductModel = require("../models/imageProductModel");
+const uploadCloud = require("../ultils/uploader");
 //* /image_product
 
 //* Lấy danh sách ảnh theo id_product
@@ -22,19 +22,10 @@ router.get("/list-images/:id_product", async (req, res, next) => {
 });
 
 //* Thêm ảnh cho sản phẩm
-router.post("/add-image/:id_product", async (req, res, next) => {
+router.post("/upload", [uploadCloud.array("image", 9)], async (req, res) => {
   try {
-    const { id_product } = req.params;
-    const { image } = req.body;
-
-    const newImage = new imageModel({
-      image,
-      id_product,
-    });
-
-    await newImage.save();
-
-    res.json({ status: true, data: newImage });
+    const { files } = req;
+    console.log(files);
   } catch (error) {
     res.json({ status: false, mess: error.message });
   }
