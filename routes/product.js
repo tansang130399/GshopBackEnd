@@ -167,26 +167,25 @@ router.put("/update_view", async (req, res) => {
   }
 });
 
-//* Cập nhật status và isActive của sản phẩm (để test kiểm thử)
+//* Cập nhật status và isActive của sản phẩm
 router.put("/update_status", async (req, res) => {
   try {
-    const {id} = req.query;
-    const {isActive, quantity} = req.body;
+    const { _id } = req.query;
+    const { isActive, quantity } = req.body;
 
     // Kiểm tra xem sản phẩm có tồn tại không
-    const product = await productModel.findById(id);
-    if(!product){
-      return res.status(404).json({ message: "Sản phẩm không tồn tại" });
+    const product = await productModel.findById(_id);
+    if (!product) {
+      return res.status(404).json({ status: false, message: "Sản phẩm không tồn tại" });
     }
 
-    // Cập nhật thông tin sản phẩm
-    if(isActive !== undefined) product.isActive = isActive;
-    if(quantity !== undefined) product.quantity = quantity;
-    product.status = getStatus(product);
-
-    // Lưu sản phẩm
-    await product.save()
-    res.status(200).json({ status: true, message: 'Cập nhật thành công', data: product })
+    // Cập nhật sản phẩm
+    const updatedProduct = await productModel.findByIdAndUpdate(
+      _id,
+      { quantity, isActive },
+      { new: true, runValidators: true } // trả về dữ liệu sau khi đã cập nhật
+    )
+    res.status(200).json({ status: true, message: 'Cập nhật thành công', data: updatedProduct })
   } catch (e) {
     res.status(404).json({ status: false, message: 'Cập nhật thất bại' })
   }
