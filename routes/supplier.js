@@ -16,4 +16,99 @@ router.get("/list", async (req, res, next) => {
     res.json({ status: false, mess: error.message });
   }
 });
+
+//* thêm nhà cung cấp
+router.post("/add", async (req, res, next) => {
+  try {
+    const {
+      name,
+      email,
+      phone_number,
+      representative,
+      cooperation_date,
+      address,
+      status,
+    } = req.body;
+
+    // Kiểm tra nếu thiếu thông tin
+    if (
+      !name ||
+      !email ||
+      !phone_number ||
+      !representative ||
+      !cooperation_date ||
+      !address ||
+      !status
+    ) {
+      return res.json({
+        status: false,
+        mess: "Vui lòng nhập đầy đủ thông tin",
+      });
+    }
+
+    // Tạo nhà cung cấp mới
+    const newSupplier = new supplierModel({
+      name,
+      email,
+      phone_number,
+      representative,
+      cooperation_date,
+      address,
+      status,
+    });
+    await newSupplier.save();
+
+    res.json({
+      status: true,
+      mess: "Thêm nhà cung cấp thành công",
+      data: newSupplier,
+    });
+  } catch (error) {
+    res.json({ status: false, mess: error.message });
+  }
+});
+
+//* sửa nhà cung cấp
+router.put("/update", async (req, res, next) => {
+  try {
+    const {
+      id,
+      name,
+      email,
+      phone_number,
+      representative,
+      cooperation_date,
+      address,
+      status,
+    } = req.body;
+
+    // Cập nhật dữ liệu
+    const updatedSupplier = await supplierModel.findByIdAndUpdate(
+      id,
+      {
+        name,
+        email,
+        phone_number,
+        representative,
+        cooperation_date,
+        address,
+        status,
+      },
+      { new: true }
+    );
+
+    if (updatedSupplier) {
+      res.json({
+        status: true,
+        mess: "Cập nhật thành công",
+        data: updatedSupplier,
+      });
+    } else {
+      res.json({ status: false, mess: "Không tìm thấy nhà cung cấp" });
+    }
+  } catch (error) {
+    res.json({ status: false, mess: error.message });
+  }
+});
+
 module.exports = router;
