@@ -91,7 +91,7 @@ router.put("/update/:id", async (req, res, next) => {
     const { id } = req.params;
     const { name, price, quantity, description, id_category, id_supplier, isActive } = req.body;
 
-    if (!name || !price || !quantity || !id_category || !id_supplier || isActive == null) {
+    if (!name || !price || quantity == null || !id_category || !id_supplier || isActive == null) {
       return res.json({ status: false, mess: "Thiếu dữ liệu đầu vào" });
     }
 
