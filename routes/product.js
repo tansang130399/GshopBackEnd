@@ -57,24 +57,9 @@ router.get("/detail/:id", async (req, res, next) => {
 //* Thêm sản phẩm
 router.post("/create", async (req, res, next) => {
   try {
-    const {
-      name,
-      price,
-      quantity,
-      description,
-      id_category,
-      id_supplier,
-      status,
-    } = req.body;
+    const { name, price, quantity, description, id_category, id_supplier, status } = req.body;
 
-    if (
-      !name ||
-      !price ||
-      !quantity ||
-      !id_category ||
-      !id_supplier ||
-      !status
-    ) {
+    if (!name || !price || !quantity || !id_category || !id_supplier || !status) {
       return res.json({ status: false, mess: "Thiếu dữ liệu đầu vào" });
     }
 
@@ -104,24 +89,9 @@ router.post("/create", async (req, res, next) => {
 router.put("/update/:id", async (req, res, next) => {
   try {
     const { id } = req.params;
-    const {
-      name,
-      price,
-      quantity,
-      description,
-      id_category,
-      id_supplier,
-      status,
-    } = req.body;
+    const { name, price, quantity, description, id_category, id_supplier, isActive } = req.body;
 
-    if (
-      !name ||
-      !price ||
-      !quantity ||
-      !id_category ||
-      !id_supplier ||
-      !status
-    ) {
+    if (!name || !price || !quantity || !id_category || !id_supplier || !isActive) {
       return res.json({ status: false, mess: "Thiếu dữ liệu đầu vào" });
     }
 
@@ -130,7 +100,7 @@ router.put("/update/:id", async (req, res, next) => {
     }
     const updatedProduct = await productModel.findByIdAndUpdate(
       id,
-      { name, price, quantity, description, id_category, id_supplier, status },
+      { name, price, quantity, description, id_category, id_supplier, isActive },
       { new: true }
     );
 
@@ -158,12 +128,12 @@ router.put("/update_view", async (req, res) => {
     );
 
     if (!product) {
-      return res.status(400).json({ status: false, message: 'Sản phẩm không tồn tại' });
+      return res.status(400).json({ status: false, message: "Sản phẩm không tồn tại" });
     }
 
-    res.status(200).json({ status: true, message: 'Lượt xem đã được cập nhật', product });
+    res.status(200).json({ status: true, message: "Lượt xem đã được cập nhật", product });
   } catch (e) {
-    res.status(404).json({ status: false, message: 'Lỗi cập nhật lượt xem' });
+    res.status(404).json({ status: false, message: "Lỗi cập nhật lượt xem" });
   }
 });
 
@@ -184,10 +154,10 @@ router.put("/update_status", async (req, res) => {
       _id,
       { quantity, isActive },
       { new: true, runValidators: true } // trả về dữ liệu sau khi đã cập nhật
-    )
-    res.status(200).json({ status: true, message: 'Cập nhật thành công', data: updatedProduct })
+    );
+    res.status(200).json({ status: true, message: "Cập nhật thành công", data: updatedProduct });
   } catch (e) {
-    res.status(404).json({ status: false, message: 'Cập nhật thất bại' })
+    res.status(404).json({ status: false, message: "Cập nhật thất bại" });
   }
 });
 

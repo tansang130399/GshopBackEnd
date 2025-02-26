@@ -31,6 +31,7 @@ var orderRouter = require("./routes/order");
 var paymentMethodRouter = require("./routes/payment");
 var detailOrderRouter = require("./routes/detail_order");
 var ratingRouter = require("./routes/rating");
+var cartRouter = require("./routes/cart");
 
 // view engine setup
 app.set("views", path.join(__dirname, "views"));
@@ -44,9 +45,7 @@ app.use(express.static(path.join(__dirname, "public")));
 
 //*connect database
 mongoose
-  .connect(
-    "mongodb+srv://ASM:V26pueztMVK6ZqUS@cluster0.7d9pi.mongodb.net/GShop"
-  )
+  .connect("mongodb+srv://ASM:V26pueztMVK6ZqUS@cluster0.7d9pi.mongodb.net/GShop")
   .then(() => console.log(">>>>>>>>>> DB Connected!!!!!!"))
   .catch((err) => console.log(">>>>>>>>> DB Error: ", err));
 
@@ -62,6 +61,7 @@ app.use("/order", orderRouter);
 app.use("/payment_method", paymentMethodRouter);
 app.use("/detail_order", detailOrderRouter);
 app.use("/rating", ratingRouter);
+app.use("/cart", cartRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

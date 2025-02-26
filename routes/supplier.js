@@ -20,26 +20,10 @@ router.get("/list", async (req, res, next) => {
 //* thêm nhà cung cấp
 router.post("/add", async (req, res, next) => {
   try {
-    const {
-      name,
-      email,
-      phone_number,
-      representative,
-      cooperation_date,
-      address,
-      status,
-    } = req.body;
+    const { name, email, phone_number, representative, cooperation_date, address, status } = req.body;
 
     // Kiểm tra nếu thiếu thông tin
-    if (
-      !name ||
-      !email ||
-      !phone_number ||
-      !representative ||
-      !cooperation_date ||
-      !address ||
-      !status
-    ) {
+    if (!name || !email || !phone_number || !representative || !cooperation_date || !address || !status) {
       return res.json({
         status: false,
         mess: "Vui lòng nhập đầy đủ thông tin",
@@ -69,18 +53,10 @@ router.post("/add", async (req, res, next) => {
 });
 
 //* sửa nhà cung cấp
-router.put("/update", async (req, res, next) => {
+router.put("/update/:id", async (req, res, next) => {
   try {
-    const {
-      id,
-      name,
-      email,
-      phone_number,
-      representative,
-      cooperation_date,
-      address,
-      status,
-    } = req.body;
+    const { id } = req.params;
+    const { name, email, phone_number, representative, cooperation_date, address, status } = req.body;
 
     // Cập nhật dữ liệu
     const updatedSupplier = await supplierModel.findByIdAndUpdate(

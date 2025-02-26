@@ -27,7 +27,7 @@ const supplierSchema = new Schema({
     trim: true,
   },
   cooperation_date: {
-    type: Date,
+    type: String,
     required: true,
   },
   address: {
