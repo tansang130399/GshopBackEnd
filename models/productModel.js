@@ -38,11 +38,8 @@ productSchema.pre("findOneAndUpdate", function (next) {
 
 // Hàm xác định trạng thái của sản phẩm
 function getStatus(product) {
-  if (!product.isActive) return "Ngừng kinh doanh";
   if (product.quantity === 0) return "Hết hàng";
-  return product.quantity <= 10
-    ? `Chỉ còn ${product.quantity} bộ`
-    : `Còn ${product.quantity} bộ`;
+  return product.quantity <= 10 ? `Chỉ còn ${product.quantity} bộ` : `Còn ${product.quantity} bộ`;
 }
 
 const Product = mongoose.model("product", productSchema);
