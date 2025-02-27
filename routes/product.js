@@ -3,7 +3,6 @@ const productModel = require("../models/productModel");
 var router = express.Router();
 
 const mongoose = require("mongoose");
-const ObjectId = mongoose.Types.ObjectId;
 
 //* /product
 
@@ -57,14 +56,14 @@ router.get("/detail/:id", async (req, res, next) => {
 //* Thêm sản phẩm
 router.post("/create", async (req, res, next) => {
   try {
-    const { name, price, quantity, description, id_category, id_supplier, status } = req.body;
-
-    if (!name || !price || !quantity || !id_category || !id_supplier || !status) {
-      return res.json({ status: false, mess: "Thiếu dữ liệu đầu vào" });
-    }
+    const { name, price, quantity, description, id_category, id_supplier, isActive } = req.body;
 
     if (price <= 0 || quantity <= 0) {
       return res.json({ status: false, mess: "Sai định dạng" });
+    }
+
+    if (!name || !price || !quantity || !id_category || !id_supplier || isActive == undefined) {
+      return res.json({ status: false, mess: "Thiếu dữ liệu đầu vào" });
     }
 
     const newProduct = new productModel({
@@ -74,7 +73,7 @@ router.post("/create", async (req, res, next) => {
       description,
       id_category,
       id_supplier,
-      status,
+      isActive,
     });
 
     const savedProduct = await newProduct.save();
@@ -91,13 +90,14 @@ router.put("/update/:id", async (req, res, next) => {
     const { id } = req.params;
     const { name, price, quantity, description, id_category, id_supplier, isActive } = req.body;
 
-    if (!name || !price || quantity == null || !id_category || !id_supplier || isActive == null) {
-      return res.json({ status: false, mess: "Thiếu dữ liệu đầu vào" });
-    }
-
     if (price <= 0 || quantity <= 0) {
       return res.json({ status: false, mess: "Sai định dạng" });
     }
+
+    if (!name || !price || !quantity || !id_category || !id_supplier || isActive == undefined) {
+      return res.json({ status: false, mess: "Thiếu dữ liệu đầu vào" });
+    }
+
     const updatedProduct = await productModel.findByIdAndUpdate(
       id,
       { name, price, quantity, description, id_category, id_supplier, isActive },

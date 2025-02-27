@@ -11,17 +11,17 @@ router.post("/login", async (req, res) => {
 
     var checkUser = await userModel.findOne({
       $or: [{ email }, { phone_number }],
-      password: password
+      password: password,
     });
 
     if (checkUser) {
       res.status(200).json({
         status: true,
-        message: 'Đăng nhập thành công',
-        data: checkUser
-      })
+        message: "Đăng nhập thành công",
+        data: checkUser,
+      });
     } else {
-      res.status(400).json({ status: false, message: 'Email/SĐT hoặc Mật khẩu sai' })
+      res.status(400).json({ status: false, message: "Email/SĐT hoặc Mật khẩu sai" });
     }
 
     // if (!checkUser) {
@@ -50,30 +50,30 @@ router.post("/register", async (req, res) => {
     //   return res.json({ status: false, message: "User already exists" });
     // }
 
-    // await userModel.create({ email, password, fullName, phoneNumber });
+    // await userModel.create({ email, password, name, phone_number });
 
     // res.json({ status: true, message: "Registration successful" });
 
     // Kiểm tra xem email hoặc phone đã tồn tại chưa
     const existingUser = await userModel.findOne({ $or: [{ email }, { phone_number }] });
     if (existingUser) {
-      return res.status(400).json({ status: false, message: 'Email hoặc Số điện thoại đã tồn tại' })
-    };
+      return res.status(400).json({ status: false, message: "Email hoặc Số điện thoại đã tồn tại" });
+    }
 
     // Kiểm tra mật khẩu
     const checkPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
     if (!checkPassword.test(password)) {
       return res.status(400).json({
         status: false,
-        message: 'Mật khẩu phải chứa ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường và số'
-      })
+        message: "Mật khẩu phải chứa ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường và số",
+      });
     }
 
     // Tạo đối tượng
     const objectUser = { email, password, name, phone_number };
     await userModel.create(objectUser);
 
-    res.status(200).json({ status: true, message: 'Đăng ký thành công' });
+    res.status(200).json({ status: true, message: "Đăng ký thành công" });
   } catch (error) {
     console.error(error);
     res.status(404).json({ status: false, message: error.message });
@@ -113,18 +113,18 @@ router.get("/list", async (req, res, next) => {
 
 //* Cập nhật user
 router.put("/update", async (req, res) => {
-  const { email, fullName, phoneNumber, password } = req.body;
+  const { email, name, phone_number, password } = req.body;
 
   try {
-    const user = await userModel.find({ email: email });
+    const user = await userModel.findOne({ email: email });
 
-    user.fullName = fullName || user.fullName;
-    user.phoneNumber = phoneNumber || user.phoneNumber;
+    user.name = name || user.name;
+    user.phone_number = phone_number || user.phone_number;
     user.password = password || user.password;
 
     await user.save();
 
-    res.json({ status: true, message: "User updated successfully" });
+    res.json({ status: true, data: user });
   } catch (error) {
     console.error(error);
     res.json({ status: false, message: error.message });
@@ -158,7 +158,7 @@ router.get("/list_admin", async (req, res) => {
     const admin = await userModel.find({ role: "admin" });
     res.status(200).json({ status: true, data: admin });
   } catch (e) {
-    res.status(404).json({ status: false, message: e })
+    res.status(404).json({ status: false, message: e });
   }
 });
 
@@ -168,7 +168,7 @@ router.get("/list_staff", async (req, res) => {
     const staff = await userModel.find({ role: "staff" });
     res.status(200).json({ status: true, data: staff });
   } catch (e) {
-    res.status(404).json({ status: false, message: e })
+    res.status(404).json({ status: false, message: e });
   }
 });
 
@@ -178,7 +178,7 @@ router.get("/list_user", async (req, res) => {
     const user = await userModel.find({ role: "user" });
     res.status(200).json({ status: true, data: user });
   } catch (e) {
-    res.status(404).json({ status: false, message: e })
+    res.status(404).json({ status: false, message: e });
   }
 });
 
@@ -204,7 +204,7 @@ router.put("/changPass", async (req, res) => {
   } catch (e) {
     return res.status(404).json({ status: false, message: "Đổi mật khẩu thất bại" });
   }
-})
+});
 
 // Lấy thông tin chi tiết của user
 router.get("/detail_user", async (req, res) => {
@@ -215,6 +215,6 @@ router.get("/detail_user", async (req, res) => {
   } catch (e) {
     res.status(404).json({ status: false, message: e });
   }
-})
+});
 
 module.exports = router;
