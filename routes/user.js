@@ -1,6 +1,7 @@
 var express = require("express");
 const userModel = require("../models/userModel");
 var router = express.Router();
+const uploadCloud = require("../ultils/upload_avatar");
 
 //* /user
 //* Đăng nhập
@@ -113,14 +114,15 @@ router.get("/list", async (req, res, next) => {
 
 //* Cập nhật user
 router.put("/update", async (req, res) => {
-  const { email, name, phone_number, password } = req.body;
+  const { email, name, phone_number } = req.body;
 
   try {
     const user = await userModel.findOne({ email: email });
-
+    if (!user) {
+      return res.json({ status: false, mess: "User không tồn tại" });
+    }
     user.name = name || user.name;
     user.phone_number = phone_number || user.phone_number;
-    user.password = password || user.password;
 
     await user.save();
 
@@ -217,4 +219,44 @@ router.get("/detail_user", async (req, res) => {
   }
 });
 
+//* tạo avatar user
+router.post("/create-avatar/:id_user", [uploadCloud.single("image")], async (req, res) => {
+  try {
+    const { id_user } = req.params;
+    const { file } = req;
+
+    //kiểm tra
+    if (!file || file.length === 0) {
+      return res.json({ status: false, message: "Vui lòng chọn ít nhất một ảnh" });
+    }
+
+    const user = await productModel.findById(id_user);
+    if (!user) {
+      return res.json({ status: false, message: "User không tồn tại" });
+    }
+
+    const imageUrls = file.path;
+
+    let listIma = await imageProductModel.findOne({ id_user });
+
+    if (!listIma) {
+      listIma = new imageProductModel({ id_user, image: imageUrls });
+    } else {
+      listIma.image = [...listIma.image, ...imageUrls];
+    }
+
+    await listIma.save();
+    return res.json({
+      status: true,
+      message: `Đã upload thành công ${files.length} ảnh`,
+      data: listIma,
+    });
+  } catch (error) {
+    return res.json({
+      status: false,
+      message: "Đã xảy ra lỗi khi upload ảnh",
+      error: error.message,
+    });
+  }
+});
 module.exports = router;

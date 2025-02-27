@@ -12,6 +12,11 @@ router.get("/list-images/:id_product", async (req, res, next) => {
 
     const images = await imageProductModel.find({ id_product: id_product });
 
+    const product = await productModel.findById(id_product);
+    if (!product) {
+      return res.json({ status: false, message: "Sản phẩm không tồn tại" });
+    }
+
     if (images.length === 0) {
       return res.json({ status: false, mess: "Không có ảnh cho sản phẩm này" });
     }
