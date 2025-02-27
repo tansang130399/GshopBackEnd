@@ -18,7 +18,7 @@ const productSchema = new Schema({
     ref: "supplier",
   },
   isActive: { type: Boolean, default: true },
-  status: { type: String, required: true },
+  status: { type: String },
 });
 
 // Middleware cập nhật status trước khi lưu sản phẩm mới
