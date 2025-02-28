@@ -68,24 +68,23 @@ router.post("/upload/:id_product", [uploadCloud.array("image", 10)], async (req,
   }
 });
 
-//* Xóa ảnh theo id
-router.delete("/delete-image/:id", async (req, res, next) => {
+//* Xóa ảnh sản phẩm
+router.delete("/delete-image/:id_product", async (req, res, next) => {
   try {
-    const { id } = req.params;
+    const { id_product } = req.params;
+    const { imaUrlRemove } = req.body;
 
-    // Kiểm tra tính hợp lệ của id
-    if (!ObjectId.isValid(id)) {
-      return res.json({ status: false, mess: "ID ảnh không hợp lệ" });
+    let imaProduct = await imageProductModel.findOne({ id_product });
+
+    if (!imaProduct) {
+      return res.json({ status: false, mess: "Sản phẩm chưa có hình ảnh" });
     }
 
-    // Tìm và xóa ảnh
-    const deletedImage = await imageModel.findByIdAndDelete(id);
+    imaProduct.image = imaProduct.image.filter((item) => item !== imaUrlRemove);
 
-    if (!deletedImage) {
-      return res.json({ status: false, mess: "Không tìm thấy ảnh để xóa" });
-    }
+    imaProduct.save();
 
-    res.json({ status: true, mess: "Xóa ảnh thành công", data: deletedImage });
+    res.json({ status: true, mess: "Xóa ảnh thành công", data: imaProduct });
   } catch (error) {
     res.json({ status: false, mess: error.message });
   }
