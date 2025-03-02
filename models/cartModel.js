@@ -12,6 +12,7 @@ const cartSchema = new Schema({
       id_product: { type: ObjectId, ref: "product", required: true },
       quantity: { type: Number, required: true, min: 1 },
       price: { type: Number, required: true },
+      selected: { type: Boolean, default: false },
     },
   ],
   totalPrice: { type: Number, default: 0 },
