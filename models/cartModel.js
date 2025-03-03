@@ -20,7 +20,9 @@ const cartSchema = new Schema({
 
 // Middleware tự động cập nhật totalPrice trước khi lưu
 cartSchema.pre("save", function (next) {
-  this.totalPrice = this.items.reduce((sum, item) => sum + item.quantity * item.price, 0);
+  this.totalPrice = this.items.reduce((sum, item) => {
+    return item.selected ? sum + item.quantity * item.price : sum;
+  }, 0);
   next();
 });
 
