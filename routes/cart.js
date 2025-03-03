@@ -154,7 +154,7 @@ router.get("/:id_user", async (req, res) => {
   }
 });
 
-// API cập nhật thuộc tính selected của sản phẩm trong giỏ hàng
+// * Cập nhật thuộc tính selected của sản phẩm
 router.put("/update-selected", async (req, res) => {
   try {
     const { id_user, id_product, selected } = req.body;
@@ -167,27 +167,31 @@ router.put("/update-selected", async (req, res) => {
     }
 
     // Tìm giỏ hàng của người dùng
-    const cart = await Cart.findOne({ id_user: id_user });
+    const cart = await Cart.findOne({ id_user });
 
     if (!cart) {
       return res.json({ status: false, message: "Không tìm thấy giỏ hàng" });
     }
 
-    // Tìm sản phẩm trong giỏ hàng
-    const item = cart.items.find((item) => item.id_product.toString() === id_product);
-    if (!item) {
-      return res.status(404).json({ message: "Sản phẩm không có trong giỏ hàng" });
+    if (id_product) {
+      // 🔹 Cập nhật trạng thái selected cho một sản phẩm cụ thể
+      const item = cart.items.find((item) => item.id_product.toString() === id_product);
+      if (!item) {
+        return res.json({ status: false, message: "Sản phẩm không có trong giỏ hàng" });
+      }
+      item.selected = selected;
+    } else {
+      // 🔥 Cập nhật trạng thái selected cho tất cả sản phẩm
+      cart.items.forEach((item) => {
+        item.selected = selected;
+      });
     }
 
-    // Cập nhật thuộc tính selected
-    item.selected = selected;
-
-    // Lưu lại giỏ hàng sau khi cập nhật
     await cart.save();
 
     res.json({ status: true, message: "Cập nhật trạng thái thành công", cart });
   } catch (error) {
-    console.error();
+    console.error(error);
     res.json({ status: false, message: error.message });
   }
 });
