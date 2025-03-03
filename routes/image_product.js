@@ -68,11 +68,16 @@ router.post("/upload/:id_product", [uploadCloud.array("image", 10)], async (req,
   }
 });
 
-//* Xóa ảnh sản phẩm
+//* Xóa 1 hoặc nhiều ảnh sản phẩm
 router.delete("/delete-image/:id_product", async (req, res, next) => {
   try {
     const { id_product } = req.params;
-    const { imaUrlRemove } = req.body;
+    const { imaUrlsRemove } = req.body; // imaUrlsRemove là mảng
+
+    // Kiểm tra nếu không truyền đúng định dạng
+    if (!Array.isArray(imaUrlsRemove) || imaUrlsRemove.length === 0) {
+      return res.json({ status: false, mess: "Dữ liệu không hợp lệ" });
+    }
 
     let imaProduct = await imageProductModel.findOne({ id_product });
 
@@ -80,9 +85,10 @@ router.delete("/delete-image/:id_product", async (req, res, next) => {
       return res.json({ status: false, mess: "Sản phẩm chưa có hình ảnh" });
     }
 
-    imaProduct.image = imaProduct.image.filter((item) => item !== imaUrlRemove);
+    // Lọc bỏ những ảnh có trong danh sách cần xóa
+    imaProduct.image = imaProduct.image.filter((item) => !imaUrlsRemove.includes(item));
 
-    imaProduct.save();
+    await imaProduct.save();
 
     res.json({ status: true, mess: "Xóa ảnh thành công", data: imaProduct });
   } catch (error) {

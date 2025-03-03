@@ -12,7 +12,7 @@ const storage = new CloudinaryStorage({
   cloudinary,
   allowedFormats: ["jpg", "png", "jpeg", "heif", "heic"],
   params: {
-    folder: "gshop-image-product",
+    folder: "gshop-image-news",
   },
 });
 
