@@ -4,7 +4,10 @@ const ObjectId = Schema.ObjectId;
 
 const orderSchema = new Schema({
   id: { type: ObjectId },
-  date: { type: String },
+  date: {
+    type: String,
+    default: () => new Date().toLocaleDateString("en-GB"),
+  },
   total_price: { type: Number, required: true },
   shipping_fee: { type: Number, required: true },
   status: { type: String, required: true },

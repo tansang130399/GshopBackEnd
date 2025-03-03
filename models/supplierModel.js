@@ -28,7 +28,7 @@ const supplierSchema = new Schema({
   },
   cooperation_date: {
     type: String,
-    required: true,
+    default: () => new Date().toLocaleDateString("en-GB"),
   },
   address: {
     type: String,
@@ -41,5 +41,4 @@ const supplierSchema = new Schema({
   },
 });
 
-module.exports =
-  mongoose.models.supplier || mongoose.model("supplier", supplierSchema);
+module.exports = mongoose.models.supplier || mongoose.model("supplier", supplierSchema);

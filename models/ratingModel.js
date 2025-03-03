@@ -7,7 +7,7 @@ const ratingSchema = new Schema({
   star: { type: Number, required: true, min: 1, max: 5 },
   date: {
     type: String,
-    default: () => new Date().toLocaleDateString("en-GB")
+    default: () => new Date().toLocaleDateString("en-GB"),
   },
   content: { type: String, required: true },
   id_user: {

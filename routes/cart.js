@@ -18,7 +18,10 @@ router.post("/add", async (req, res) => {
 
     // Kiểm tra số lượng tồn kho
     if (quantity > product.quantity) {
-      return res.json({ status: false, message: `Chỉ còn ${product.quantity} sản phẩm trong kho` });
+      return res.json({
+        status: false,
+        message: `Chỉ còn ${product.quantity} sản phẩm trong kho`,
+      });
     }
 
     let cart = await Cart.findOne({ id_user });
@@ -34,7 +37,9 @@ router.post("/add", async (req, res) => {
       if (existingItem.quantity + quantity > product.quantity) {
         return res.json({
           status: false,
-          message: `Bạn chỉ có thể thêm tối đa ${product.quantity - existingItem.quantity} sản phẩm nữa`,
+          message: `Bạn chỉ có thể thêm tối đa ${
+            product.quantity - existingItem.quantity
+          } sản phẩm nữa`,
         });
       }
       existingItem.quantity += quantity;
@@ -62,7 +67,10 @@ router.put("/update", async (req, res) => {
 
     // Kiểm tra số lượng tồn kho
     if (quantity > product.quantity) {
-      return res.json({ status: false, message: `Chỉ còn ${product.quantity} sản phẩm trong kho` });
+      return res.json({
+        status: false,
+        message: `Chỉ còn ${product.quantity} sản phẩm trong kho`,
+      });
     }
 
     let cart = await Cart.findOne({ id_user });
@@ -107,7 +115,10 @@ router.get("/:id_user", async (req, res) => {
   try {
     const { id_user } = req.params;
 
-    const cart = await Cart.findOne({ id_user }).populate("items.id_product", "name quantity price isActive");
+    const cart = await Cart.findOne({ id_user }).populate(
+      "items.id_product",
+      "name quantity price isActive"
+    );
     if (!cart) {
       return res.json({ status: false, message: "Giỏ hàng trống" });
     }
@@ -143,4 +154,41 @@ router.get("/:id_user", async (req, res) => {
   }
 });
 
+// API cập nhật thuộc tính selected của sản phẩm trong giỏ hàng
+router.put("/update-selected", async (req, res) => {
+  try {
+    const { id_user, id_product, selected } = req.body;
+
+    if (typeof selected !== "boolean") {
+      return res.json({
+        status: false,
+        message: "Giá trị selected phải là true hoặc false",
+      });
+    }
+
+    // Tìm giỏ hàng của người dùng
+    const cart = await Cart.findOne({ id_user: id_user });
+
+    if (!cart) {
+      return res.json({ status: false, message: "Không tìm thấy giỏ hàng" });
+    }
+
+    // Tìm sản phẩm trong giỏ hàng
+    const item = cart.items.find((item) => item.id_product.toString() === id_product);
+    if (!item) {
+      return res.status(404).json({ message: "Sản phẩm không có trong giỏ hàng" });
+    }
+
+    // Cập nhật thuộc tính selected
+    item.selected = selected;
+
+    // Lưu lại giỏ hàng sau khi cập nhật
+    await cart.save();
+
+    res.json({ status: true, message: "Cập nhật trạng thái thành công", cart });
+  } catch (error) {
+    console.error();
+    res.json({ status: false, message: error.message });
+  }
+});
 module.exports = router;
