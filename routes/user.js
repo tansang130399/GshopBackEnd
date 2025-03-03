@@ -4,6 +4,7 @@ var router = express.Router();
 const uploadCloud = require("../ultils/upload_avatar");
 
 //* /user
+
 //* Đăng nhập
 router.post("/login", async (req, res) => {
   const { email, phone_number, password } = req.body;
@@ -58,7 +59,9 @@ router.post("/register", async (req, res) => {
     // Kiểm tra xem email hoặc phone đã tồn tại chưa
     const existingUser = await userModel.findOne({ $or: [{ email }, { phone_number }] });
     if (existingUser) {
-      return res.status(400).json({ status: false, message: "Email hoặc Số điện thoại đã tồn tại" });
+      return res
+        .status(400)
+        .json({ status: false, message: "Email hoặc Số điện thoại đã tồn tại" });
     }
 
     // Kiểm tra mật khẩu
@@ -197,7 +200,9 @@ router.put("/changPass", async (req, res) => {
 
     // Kiểm tra mật khẩu nhập lại có khớp không
     if (newPassword !== confirmPassword) {
-      return res.status(400).json({ status: false, message: "Mật khẩu mới nhập lại không khớp" });
+      return res
+        .status(400)
+        .json({ status: false, message: "Mật khẩu mới nhập lại không khớp" });
     }
 
     // Cập nhật lại mật khẩu user
@@ -220,43 +225,52 @@ router.get("/detail_user", async (req, res) => {
 });
 
 //* tạo avatar user
-router.post("/create-avatar/:id_user", [uploadCloud.single("image")], async (req, res) => {
+router.post(
+  "/create-avatar/:id_user",
+  [uploadCloud.single("image")],
+  async (req, res) => {
+    try {
+      const { id_user } = req.params;
+      const { file } = req;
+
+      //kiểm tra
+      if (!file || file.length === 0) {
+        return res.json({ status: false, message: "Vui lòng chọn ít nhất một ảnh" });
+      }
+
+      const user = await userModel.findById(id_user);
+      if (!user) {
+        return res.json({ status: false, message: "User không tồn tại" });
+      }
+
+      user.avatar = file.path;
+
+      await user.save();
+      return res.json({ status: true, data: user });
+    } catch (error) {
+      return res.json({ status: false, message: error.message });
+    }
+  }
+);
+
+//* xóa avatar user
+router.delete("/delete-avatar/:id_user", async (req, res) => {
   try {
     const { id_user } = req.params;
-    const { file } = req;
 
-    //kiểm tra
-    if (!file || file.length === 0) {
-      return res.json({ status: false, message: "Vui lòng chọn ít nhất một ảnh" });
-    }
+    const updatedUser = await userModel.findByIdAndUpdate(
+      id_user,
+      { avatar: "url" },
+      { new: true }
+    );
 
-    const user = await productModel.findById(id_user);
-    if (!user) {
+    if (!updatedUser) {
       return res.json({ status: false, message: "User không tồn tại" });
     }
 
-    const imageUrls = file.path;
-
-    let listIma = await imageProductModel.findOne({ id_user });
-
-    if (!listIma) {
-      listIma = new imageProductModel({ id_user, image: imageUrls });
-    } else {
-      listIma.image = [...listIma.image, ...imageUrls];
-    }
-
-    await listIma.save();
-    return res.json({
-      status: true,
-      message: `Đã upload thành công ${files.length} ảnh`,
-      data: listIma,
-    });
+    res.json({ status: true, data: updatedUser });
   } catch (error) {
-    return res.json({
-      status: false,
-      message: "Đã xảy ra lỗi khi upload ảnh",
-      error: error.message,
-    });
+    res.json({ status: false, message: error.message });
   }
 });
 module.exports = router;
