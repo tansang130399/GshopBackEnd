@@ -57,10 +57,6 @@ router.put("/update/:id", async (req, res, next) => {
       { new: true }
     );
 
-    if (!deletedAddress) {
-      return res.json({ status: false, mess: "Error" });
-    }
-
     res.json({ status: true, data: updatedAddress });
   } catch (error) {
     res.json({ status: false, mess: error.message });

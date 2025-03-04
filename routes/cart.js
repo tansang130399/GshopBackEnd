@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const Cart = require("../models/cartModel");
 const Product = require("../models/productModel");
+const cartModel = require("../models/cartModel");
 
 //* /cart
 
@@ -107,6 +108,23 @@ router.delete("/remove", async (req, res) => {
     res.json({ status: true, data: cart });
   } catch (error) {
     res.json({ status: false, error: error.message });
+  }
+});
+
+// Xóa giỏ hàng theo ID
+router.delete("/delete/:id_cart", async (req, res) => {
+  try {
+    const { id_cart } = req.params;
+
+    const deletedItem = await cartModel.findByIdAndDelete(id_cart);
+
+    if (!deletedItem) {
+      return res.json({ status: false, message: "Không tìm thấy dữ liệu để xóa" });
+    }
+
+    res.json({ status: true, data: deletedItem });
+  } catch (error) {
+    res.json({ status: false, message: error.message });
   }
 });
 

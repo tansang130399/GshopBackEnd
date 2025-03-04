@@ -9,8 +9,8 @@ const orderSchema = new Schema({
     default: () => new Date().toLocaleDateString("en-GB"),
   },
   total_price: { type: Number, required: true },
-  shipping_fee: { type: Number, required: true },
-  status: { type: String, required: true },
+  shipping_fee: { type: Number, default: 29000 },
+  status: { type: String, default: "Đang xử lý" },
   id_user: {
     type: ObjectId,
     ref: "user",
