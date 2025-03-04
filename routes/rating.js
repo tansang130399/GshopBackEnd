@@ -1,6 +1,7 @@
 var express = require("express");
 const ratingModel = require("../models/ratingModel");
 var router = express.Router();
+const uploadCloud = require("../ultils/upload_rating");
 
 // rating
 // Thêm đánh giá
