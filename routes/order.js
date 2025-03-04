@@ -79,4 +79,27 @@ router.post("/create-order", async (req, res) => {
     res.json({ status: false, message: error.message });
   }
 });
+
+// Thay đổi status order
+router.put("/update/:id_order", async (req, res, next) => {
+  try {
+    const { id_order } = req.params;
+    const { status } = req.body;
+
+    if (!status) {
+      return res.json({ status: false, mess: "Thiếu dữ liệu đầu vào" });
+    }
+
+    const updated = await orderModel.findByIdAndUpdate(
+      id_order,
+      { status },
+      { new: true }
+    );
+
+    res.json({ status: true, data: updated });
+  } catch (error) {
+    res.json({ status: false, mess: error.message });
+  }
+});
+
 module.exports = router;

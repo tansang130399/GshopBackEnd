@@ -10,6 +10,11 @@ const ratingSchema = new Schema({
     default: () => new Date().toLocaleDateString("en-GB"),
   },
   content: { type: String, required: true },
+  images: {
+    type: [String],
+    default: [],
+    required: true,
+  },
   id_user: {
     type: ObjectId,
     ref: "user",
