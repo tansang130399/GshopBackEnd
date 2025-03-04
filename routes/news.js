@@ -1,5 +1,6 @@
 var express = require("express");
 const newsModel = require("../models/newsModel");
+const userModel = require("../models/userModel");
 var router = express.Router();
 const uploadCloud = require("../ultils/upload_news");
 
@@ -9,12 +10,16 @@ router.post("/add", async (req, res) => {
   try {
     const { title, content, id_user } = req.body;
 
+    const user = await userModel.findById(id_user);
+    if (user.role === "user") {
+      return res.json({ status: false, message: "Staff, Admin mới có thể đăng tin tức" });
+    }
     const objectNews = { title, content, id_user };
     await newsModel.create(objectNews);
 
     res.json({ status: true, data: objectNews });
   } catch (e) {
-    res.json({ status: false, message: "Thêm thất bại tin tức" });
+    res.json({ status: false, message: e.message });
   }
 });
 
