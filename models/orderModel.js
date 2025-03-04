@@ -28,6 +28,13 @@ const orderSchema = new Schema({
   },
 });
 
+// Middleware: Cộng shipping_fee vào total_price trước khi lưu
+orderSchema.pre("save", function (next) {
+  if (this.isModified("total_price") || this.isNew) {
+    this.total_price += this.shipping_fee;
+  }
+  next();
+});
 const Order = mongoose.model("order", orderSchema);
 
 module.exports = mongoose.models.oder || Order;
