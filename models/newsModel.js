@@ -7,9 +7,9 @@ const newsSchema = new Schema({
     type: ObjectId,
   },
 
-  images: {
-    type: [String],
-    default: [],
+  thumbnail: {
+    type: String,
+    default: "url",
     required: true,
   },
 

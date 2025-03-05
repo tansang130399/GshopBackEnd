@@ -23,14 +23,14 @@ router.post("/add", async (req, res) => {
   }
 });
 
-// Thêm ảnh tin tức
-router.post("/upload", [uploadCloud.array("image", 10)], async (req, res) => {
+// Thêm ảnh bìa tin tức
+router.post("/upload", [uploadCloud.single("image")], async (req, res) => {
   try {
     const { id_news } = req.query;
-    const { files } = req;
+    const { file } = req;
 
     //kiểm tra
-    if (!files || files.length === 0) {
+    if (!file || file.length === 0) {
       return res.json({ status: false, message: "Vui lòng chọn ít nhất một ảnh" });
     }
 
@@ -38,13 +38,8 @@ router.post("/upload", [uploadCloud.array("image", 10)], async (req, res) => {
     if (!news) {
       return res.json({ status: false, message: "Tin tức không tồn tại" });
     }
-    const images = files.map((file) => file.path);
 
-    if (news.images.length === 0) {
-      news.images = images;
-    } else {
-      news.images = [...news.images, ...images];
-    }
+    news.thumbnail = file.path;
 
     await news.save();
     res.json({ status: true, data: news });
@@ -53,16 +48,10 @@ router.post("/upload", [uploadCloud.array("image", 10)], async (req, res) => {
   }
 });
 
-//* Xóa 1 hoặc nhiều ảnh tin tức
+//* Xóa thumbnail tin tức
 router.delete("/delete-image", async (req, res, next) => {
   try {
     const { id_news } = req.query;
-    const { imaUrlsRemove } = req.body; // imaUrlsRemove là mảng
-
-    // Kiểm tra nếu không truyền đúng định dạng
-    if (!Array.isArray(imaUrlsRemove) || imaUrlsRemove.length === 0) {
-      return res.json({ status: false, mess: "Dữ liệu không hợp lệ" });
-    }
 
     let news = await newsModel.findById(id_news);
 
@@ -70,16 +59,13 @@ router.delete("/delete-image", async (req, res, next) => {
       return res.json({ status: false, mess: "Tin tức không tồn tại" });
     }
 
-    if (news.length === 0) {
-      return res.json({ status: false, mess: "Tin tức chưa có ảnh" });
-    }
+    const removeThumb = await newsModel.findByIdAndUpdate(
+      id_news,
+      { thumbnail: "url" },
+      { new: true }
+    );
 
-    // Lọc bỏ những ảnh có trong danh sách cần xóa
-    news.images = news.images.filter((item) => !imaUrlsRemove.includes(item));
-
-    await news.save();
-
-    res.json({ status: true, mess: "Xóa ảnh thành công", data: news });
+    res.json({ status: true, data: removeThumb });
   } catch (error) {
     res.json({ status: false, mess: error.message });
   }
