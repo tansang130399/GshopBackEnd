@@ -12,6 +12,11 @@ const newsSchema = new Schema({
     default: "url",
     required: true,
   },
+  images: {
+    type: [String],
+    default: [],
+    required: true,
+  },
 
   title: {
     type: String,
