@@ -20,10 +20,11 @@ router.get("/list", async (req, res, next) => {
 //* thêm nhà cung cấp
 router.post("/add", async (req, res, next) => {
   try {
-    const { name, email, phone_number, representative, cooperation_date, address, status } = req.body;
+    const { name, email, phone_number, representative, cooperation_date, address, status } =
+      req.body;
 
     // Kiểm tra nếu thiếu thông tin
-    if (!name || !email || !phone_number || !representative || !cooperation_date || !address || !status) {
+    if (!name || !email || !phone_number || !representative || !cooperation_date || !address) {
       return res.json({
         status: false,
         mess: "Vui lòng nhập đầy đủ thông tin",
@@ -44,7 +45,6 @@ router.post("/add", async (req, res, next) => {
 
     res.json({
       status: true,
-      mess: "Thêm nhà cung cấp thành công",
       data: newSupplier,
     });
   } catch (error) {
@@ -56,7 +56,8 @@ router.post("/add", async (req, res, next) => {
 router.put("/update/:id", async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { name, email, phone_number, representative, cooperation_date, address, status } = req.body;
+    const { name, email, phone_number, representative, cooperation_date, address, status } =
+      req.body;
 
     // Cập nhật dữ liệu
     const updatedSupplier = await supplierModel.findByIdAndUpdate(
@@ -76,7 +77,6 @@ router.put("/update/:id", async (req, res, next) => {
     if (updatedSupplier) {
       res.json({
         status: true,
-        mess: "Cập nhật thành công",
         data: updatedSupplier,
       });
     } else {
