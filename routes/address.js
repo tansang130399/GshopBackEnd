@@ -97,4 +97,21 @@ router.get("/list/:id_user", async (req, res, next) => {
   }
 });
 
+// Lấy chi tiết địa chỉ theo id_address
+router.get("/detail/:id_address", async (req, res) => {
+  try {
+    const { id_address } = req.params;
+
+    // Tìm địa chỉ theo ID
+    const address = await addressModel.findById(id_address);
+
+    if (!address) {
+      return res.json({ status: false, message: "Không tìm thấy địa chỉ" });
+    }
+
+    res.json({ status: true, data: address });
+  } catch (error) {
+    res.json({ status: false, message: error.message });
+  }
+});
 module.exports = router;

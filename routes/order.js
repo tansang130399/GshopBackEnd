@@ -37,7 +37,7 @@ router.get("/list-order-user/:id_user", async (req, res) => {
 });
 
 //* Lấy tất cả order "Đang xử lý" của user
-router.get("list-user-processing/:id_user", async (req, res) => {
+router.get("/list-user-processing/:id_user", async (req, res) => {
   try {
     const { id_user } = req.params;
 
@@ -53,7 +53,7 @@ router.get("list-user-processing/:id_user", async (req, res) => {
 });
 
 //* Lấy tất cả order "Đang giao hàng" của user
-router.get("list-user-onDelivery/:id_user", async (req, res) => {
+router.get("/list-user-onDelivery/:id_user", async (req, res) => {
   try {
     const { id_user } = req.params;
 
@@ -69,7 +69,7 @@ router.get("list-user-onDelivery/:id_user", async (req, res) => {
 });
 
 //* Lấy tất cả order "Đã giao" của user
-router.get("list-user-delivered/:id_user", async (req, res) => {
+router.get("/list-user-delivered/:id_user", async (req, res) => {
   try {
     const { id_user } = req.params;
 
@@ -154,11 +154,7 @@ router.put("/update/:id_order", async (req, res, next) => {
       return res.json({ status: false, mess: "Thiếu dữ liệu đầu vào" });
     }
 
-    const updated = await orderModel.findByIdAndUpdate(
-      id_order,
-      { status },
-      { new: true }
-    );
+    const updated = await orderModel.findByIdAndUpdate(id_order, { status }, { new: true });
 
     res.json({ status: true, data: updated });
   } catch (error) {
@@ -166,4 +162,47 @@ router.put("/update/:id_order", async (req, res, next) => {
   }
 });
 
+//* Lấy tất cả order "Đang xử lý"
+router.get("/list-processing", async (req, res) => {
+  try {
+    const order = await orderModel.find({ status: "Đang xử lý" });
+    if (!order) {
+      return res.json({ status: false, message: "Không có đơn hàng nào" });
+    }
+
+    res.json({ status: true, data: order });
+  } catch (error) {
+    res.json({ status: false, message: error.message });
+  }
+});
+
+//* Lấy tất cả order "Đang giao hàng"
+router.get("/list-onDelivery", async (req, res) => {
+  try {
+    const order = await orderModel.find({ status: "Đang giao hàng" });
+    if (!order) {
+      return res.json({ status: false, message: "Không có đơn hàng nào" });
+    }
+
+    res.json({ status: true, data: order });
+  } catch (error) {
+    res.json({ status: false, message: error.message });
+  }
+});
+
+//* Lấy tất cả order "Đã giao" và doanh thu
+router.get("/list-delivered", async (req, res) => {
+  try {
+    const order = await orderModel.find({ status: "Đã giao" });
+    if (!order) {
+      return res.json({ status: false, message: "Không có đơn hàng nào" });
+    }
+
+    const totalRevenue = order.reduce((sum, order) => sum + order.total_price, 0);
+
+    res.json({ status: true, data: order, totalRevenue });
+  } catch (error) {
+    res.json({ status: false, message: error.message });
+  }
+});
 module.exports = router;
