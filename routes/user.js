@@ -9,11 +9,10 @@ const uploadCloud = require("../ultils/upload_avatar");
 router.post("/login", async (req, res) => {
   const { email, phone_number, password } = req.body;
   try {
-    // const user = await userModel.findOne({ email, phone_number });
-
     var checkUser = await userModel.findOne({
       $or: [{ email }, { phone_number }],
       password: password,
+      role: { $ne: "admin" },
     });
 
     if (checkUser) {
@@ -25,16 +24,6 @@ router.post("/login", async (req, res) => {
     } else {
       res.status(400).json({ status: false, message: "Email/SĐT hoặc Mật khẩu sai" });
     }
-
-    // if (!checkUser) {
-    //   return res.json({ status: false, message: "User not found" });
-    // }
-
-    // if (password != checkUser.password) {
-    //   return res.json({ status: false, message: "Invalid credentials" });
-    // }
-
-    //res.json({ status: true, data: checkUser });
   } catch (error) {
     console.error(error);
     res.status(404).json({ status: false, message: error.message });
@@ -274,10 +263,6 @@ router.delete("/delete-avatar/:id_user", async (req, res) => {
 router.post("/create-staff", async (req, res) => {
   try {
     const { email, password, name, phone_number } = req.body;
-    const existingUser = await userModel.findOne({ $or: [{ email }, { phone_number }] });
-    if (existingUser) {
-      return res.json({ status: false, message: "Email hoặc Số điện thoại đã tồn tại" });
-    }
 
     // Kiểm tra mật khẩu
     const checkPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
@@ -288,30 +273,31 @@ router.post("/create-staff", async (req, res) => {
       });
     }
 
-    // Tạo đối tượng
-    const objectUser = { email, password, name, phone_number, role: "staff" };
-    await userModel.create(objectUser);
+    let user = await userModel.findOne({ email });
 
-    res.json({ status: true, data: objectUser });
+    if (user) {
+      user.role = "staff";
+      await user.save();
+    } else {
+      user = new userModel({ email, password, name, phone_number, role: "staff" });
+      await user.save();
+    }
+
+    res.json({ status: true, data: user });
   } catch (error) {
     res.json({ status: false, message: error.message });
   }
 });
 
-//* Cập nhật role
+//* Xóa nhân viên
 router.put("/update-staff/:id_user", async (req, res) => {
   try {
     const { id_user } = req.params;
-    const { role } = req.body;
-    console.log(role, role !== "staff");
-    if (role !== "user" && role !== "staff") {
-      return res.json({ status: false, mess: 'Role phải là "user" hoặc "staff"' });
-    }
-    const user = await userModel.findByIdAndUpdate(id_user, { role }, { new: true });
+
+    const user = await userModel.findByIdAndUpdate(id_user, { role: "user" }, { new: true });
     if (!user) {
       return res.json({ status: false, mess: "User không tồn tại" });
     }
-
     await user.save();
 
     res.json({ status: true, data: user });
