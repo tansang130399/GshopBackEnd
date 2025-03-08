@@ -14,10 +14,9 @@ router.post("/add", async (req, res) => {
     if (user.role === "user") {
       return res.json({ status: false, message: "Staff, Admin mới có thể đăng tin tức" });
     }
-    const objectNews = { title, content, id_user };
-    await newsModel.create(objectNews);
+    const newNews = await newsModel.create({ title, content, id_user });
 
-    res.json({ status: true, data: objectNews });
+    res.json({ status: true, data: newNews });
   } catch (e) {
     res.json({ status: false, message: e.message });
   }
@@ -143,43 +142,39 @@ router.delete("/delete", async (req, res) => {
 });
 
 //* Thêm ảnh cho content
-router.post(
-  "/upload-content/:id_news",
-  [uploadCloud.array("image", 10)],
-  async (req, res) => {
-    try {
-      const { id_news } = req.params;
-      const { files } = req;
+router.post("/upload-content/:id_news", [uploadCloud.array("image", 10)], async (req, res) => {
+  try {
+    const { id_news } = req.params;
+    const { files } = req;
 
-      //kiểm tra
-      if (!files || files.length === 0) {
-        return res.json({ status: false, message: "Vui lòng chọn ít nhất một ảnh" });
-      }
-
-      let news = await newsModel.findById(id_news);
-      if (!news) {
-        return res.json({ status: false, message: "Tin tức không tồn tại" });
-      }
-
-      const imageUrls = files.map((file) => file.path);
-
-      if (news.images.length === 0) {
-        news.images = imageUrls;
-      } else {
-        news.images = [...news.images, ...imageUrls];
-      }
-
-      await news.save();
-      return res.json({
-        status: true,
-        message: `Đã upload thành công ${files.length} ảnh`,
-        data: news,
-      });
-    } catch (error) {
-      return res.json({ status: false, message: error.message });
+    //kiểm tra
+    if (!files || files.length === 0) {
+      return res.json({ status: false, message: "Vui lòng chọn ít nhất một ảnh" });
     }
+
+    let news = await newsModel.findById(id_news);
+    if (!news) {
+      return res.json({ status: false, message: "Tin tức không tồn tại" });
+    }
+
+    const imageUrls = files.map((file) => file.path);
+
+    if (news.images.length === 0) {
+      news.images = imageUrls;
+    } else {
+      news.images = [...news.images, ...imageUrls];
+    }
+
+    await news.save();
+    return res.json({
+      status: true,
+      message: `Đã upload thành công ${files.length} ảnh`,
+      data: news,
+    });
+  } catch (error) {
+    return res.json({ status: false, message: error.message });
   }
-);
+});
 
 //* Xóa 1 hoặc nhiều ảnh content
 router.delete("/delete-image-content", async (req, res, next) => {
