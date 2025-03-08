@@ -225,33 +225,29 @@ router.get("/detail_user", async (req, res) => {
 });
 
 //* tạo avatar user
-router.post(
-  "/create-avatar/:id_user",
-  [uploadCloud.single("image")],
-  async (req, res) => {
-    try {
-      const { id_user } = req.params;
-      const { file } = req;
+router.post("/create-avatar/:id_user", [uploadCloud.single("image")], async (req, res) => {
+  try {
+    const { id_user } = req.params;
+    const { file } = req;
 
-      //kiểm tra
-      if (!file || file.length === 0) {
-        return res.json({ status: false, message: "Vui lòng chọn ít nhất một ảnh" });
-      }
-
-      const user = await userModel.findById(id_user);
-      if (!user) {
-        return res.json({ status: false, message: "User không tồn tại" });
-      }
-
-      user.avatar = file.path;
-
-      await user.save();
-      return res.json({ status: true, data: user });
-    } catch (error) {
-      return res.json({ status: false, message: error.message });
+    //kiểm tra
+    if (!file || file.length === 0) {
+      return res.json({ status: false, message: "Vui lòng chọn ít nhất một ảnh" });
     }
+
+    const user = await userModel.findById(id_user);
+    if (!user) {
+      return res.json({ status: false, message: "User không tồn tại" });
+    }
+
+    user.avatar = file.path;
+
+    await user.save();
+    return res.json({ status: true, data: user });
+  } catch (error) {
+    return res.json({ status: false, message: error.message });
   }
-);
+});
 
 //* xóa avatar user
 router.delete("/delete-avatar/:id_user", async (req, res) => {
@@ -273,4 +269,56 @@ router.delete("/delete-avatar/:id_user", async (req, res) => {
     res.json({ status: false, message: error.message });
   }
 });
+
+//* tạo nhân viên
+router.post("/create-staff", async (req, res) => {
+  try {
+    const { email, password, name, phone_number } = req.body;
+    const existingUser = await userModel.findOne({ $or: [{ email }, { phone_number }] });
+    if (existingUser) {
+      return res.json({ status: false, message: "Email hoặc Số điện thoại đã tồn tại" });
+    }
+
+    // Kiểm tra mật khẩu
+    const checkPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+    if (!checkPassword.test(password)) {
+      return res.json({
+        status: false,
+        message: "Mật khẩu phải chứa ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường và số",
+      });
+    }
+
+    // Tạo đối tượng
+    const objectUser = { email, password, name, phone_number, role: "staff" };
+    await userModel.create(objectUser);
+
+    res.json({ status: true, data: objectUser });
+  } catch (error) {
+    res.json({ status: false, message: error.message });
+  }
+});
+
+//* Cập nhật role
+router.put("/update-staff/:id_user", async (req, res) => {
+  try {
+    const { id_user } = req.params;
+    const { role } = req.body;
+    console.log(role, role !== "staff");
+    if (role !== "user" && role !== "staff") {
+      return res.json({ status: false, mess: 'Role phải là "user" hoặc "staff"' });
+    }
+    const user = await userModel.findByIdAndUpdate(id_user, { role }, { new: true });
+    if (!user) {
+      return res.json({ status: false, mess: "User không tồn tại" });
+    }
+
+    await user.save();
+
+    res.json({ status: true, data: user });
+  } catch (error) {
+    console.error(error);
+    res.json({ status: false, message: error.message });
+  }
+});
+
 module.exports = router;
