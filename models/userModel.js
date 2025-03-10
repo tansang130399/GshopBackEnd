@@ -8,6 +8,7 @@ const userSchema = new Schema({
   },
   avatar: {
     type: String,
+    default: "url",
   },
   name: {
     type: String,

@@ -12,7 +12,6 @@ router.post("/login", async (req, res) => {
     var checkUser = await userModel.findOne({
       $or: [{ email }, { phone_number }],
       password: password,
-      role: { $ne: "admin" },
     });
 
     if (checkUser) {
