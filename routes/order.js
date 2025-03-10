@@ -205,4 +205,145 @@ router.get("/list-delivered", async (req, res) => {
     res.json({ status: false, message: error.message });
   }
 });
+
+//* doanh thu 7 ngày trước, 30 ngày trước, từ trước đến nay
+router.get("/revenue", async (req, res) => {
+  try {
+    // Lấy ngày hiện tại
+    const today = new Date();
+    today.setHours(23, 59, 59, 999);
+
+    // Tính ngày bắt đầu cho mỗi khoảng thời gian
+    const sevenDaysAgo = new Date(today);
+    sevenDaysAgo.setDate(today.getDate() - 7);
+    sevenDaysAgo.setHours(0, 0, 0, 0);
+
+    const thirtyDaysAgo = new Date(today);
+    thirtyDaysAgo.setDate(today.getDate() - 30);
+    thirtyDaysAgo.setHours(0, 0, 0, 0);
+
+    // Chuyển đổi các ngày sang định dạng "DD/MM/YYYY" (en-GB) để phù hợp với format lưu trong DB
+    const formatDate = (date) => {
+      return date.toLocaleDateString("en-GB");
+    };
+
+    const todayFormatted = formatDate(today);
+    const sevenDaysAgoFormatted = formatDate(sevenDaysAgo);
+    const thirtyDaysAgoFormatted = formatDate(thirtyDaysAgo);
+
+    // 0. Doanh thu hôm nay
+    const toDayOrders = await orderModel.find({
+      date: todayFormatted,
+      status: "Đã giao",
+    });
+
+    const toDayRevenue = toDayOrders.reduce((total, order) => total + order.total_price, 0);
+
+    // 1. Tính doanh thu 7 ngày gần đây
+    const last7DaysOrders = await orderModel.find({
+      date: {
+        $gte: sevenDaysAgoFormatted,
+        $lt: todayFormatted,
+      },
+      status: "Đã giao",
+    });
+
+    const last7DaysRevenue = last7DaysOrders.reduce(
+      (total, order) => total + order.total_price,
+      0
+    );
+
+    // Doanh thu theo từng ngày trong 7 ngày gần đây
+    const dailyRevenueLast7Days = {};
+    const last7DaysArray = [];
+
+    for (let i = 1; i <= 7; i++) {
+      const date = new Date(today);
+      date.setDate(today.getDate() - i);
+      const dateFormatted = formatDate(date);
+      last7DaysArray.push(dateFormatted);
+      dailyRevenueLast7Days[dateFormatted] = 0;
+    }
+
+    last7DaysOrders.forEach((order) => {
+      if (dailyRevenueLast7Days[order.date] !== undefined) {
+        dailyRevenueLast7Days[order.date] += order.total_price;
+      }
+    });
+
+    // 2. Tính doanh thu 30 ngày gần đây
+    const last30DaysOrders = await orderModel.find({
+      date: {
+        $gte: thirtyDaysAgoFormatted,
+        $lt: todayFormatted,
+      },
+      status: "Đã giao",
+    });
+
+    const last30DaysRevenue = last30DaysOrders.reduce(
+      (total, order) => total + order.total_price,
+      0
+    );
+
+    // 3. Tính tổng doanh thu từ trước đến nay
+    const allCompletedOrders = await orderModel.find({
+      status: "Đã giao",
+    });
+
+    const totalRevenue = allCompletedOrders.reduce(
+      (total, order) => total + order.total_price,
+      0
+    );
+
+    // Tính doanh thu theo tháng trong năm hiện tại
+    const currentYear = today.getFullYear();
+    const monthlyRevenue = {};
+
+    // Khởi tạo doanh thu các tháng bằng 0
+    for (let i = 0; i < 12; i++) {
+      const monthName = new Date(currentYear, i, 1).toLocaleString("vi-VN", { month: "long" });
+      monthlyRevenue[monthName] = 0;
+    }
+
+    allCompletedOrders.forEach((order) => {
+      const orderDate = order.date.split("/").map((part) => parseInt(part, 10));
+      const orderMonth = orderDate[1] - 1; // Tháng trong JS bắt đầu từ 0
+      const orderYear = orderDate[2];
+
+      if (orderYear === currentYear) {
+        const monthName = new Date(currentYear, orderMonth, 1).toLocaleString("vi-VN", {
+          month: "long",
+        });
+        monthlyRevenue[monthName] += order.total_price;
+      }
+    });
+
+    // Tính số đơn hàng đã hoàn thành
+    const totalCompletedOrders = allCompletedOrders.length;
+
+    // Tính giá trị đơn hàng trung bình
+    const averageOrderValue =
+      totalCompletedOrders > 0 ? totalRevenue / totalCompletedOrders : 0;
+
+    return res.json({
+      status: true,
+      data: {
+        toDayRevenue,
+        last7DaysRevenue,
+        last30DaysRevenue,
+        totalRevenue,
+        dailyRevenueLast7Days,
+        monthlyRevenue,
+        totalCompletedOrders,
+        averageOrderValue,
+      },
+    });
+  } catch (error) {
+    return res.json({
+      status: false,
+      message: error.message,
+    });
+  }
+});
+
 module.exports = router;
