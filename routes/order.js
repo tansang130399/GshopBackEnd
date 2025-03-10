@@ -209,7 +209,6 @@ router.get("/list-delivered", async (req, res) => {
 //* doanh thu 7 ngày trước, 30 ngày trước, từ trước đến nay
 router.get("/revenue", async (req, res) => {
   try {
-    // Lấy ngày hiện tại
     const today = new Date();
     today.setHours(23, 59, 59, 999);
 
@@ -321,10 +320,6 @@ router.get("/revenue", async (req, res) => {
     // Tính số đơn hàng đã hoàn thành
     const totalCompletedOrders = allCompletedOrders.length;
 
-    // Tính giá trị đơn hàng trung bình
-    const averageOrderValue =
-      totalCompletedOrders > 0 ? totalRevenue / totalCompletedOrders : 0;
-
     return res.json({
       status: true,
       data: {
@@ -335,7 +330,6 @@ router.get("/revenue", async (req, res) => {
         dailyRevenueLast7Days,
         monthlyRevenue,
         totalCompletedOrders,
-        averageOrderValue,
       },
     });
   } catch (error) {
@@ -346,4 +340,83 @@ router.get("/revenue", async (req, res) => {
   }
 });
 
+//* doanh thu từ ngày đến ngày ("dd/mm/yyyy")
+router.get("/revenue-daily", async (req, res) => {
+  try {
+    const { start, end } = req.body; //data mẫu { "start": "01/03/2025", "end": "06/03/2025"}
+
+    if (!start || !end) {
+      return res.json({
+        status: false,
+        message: "Thiếu tham số ngày bắt đầu hoặc ngày kết thúc",
+      });
+    }
+
+    // Kiểm tra định dạng ngày tháng (DD/MM/YYYY)
+    const dateRegex = /^\d{2}\/\d{2}\/\d{4}$/;
+    if (!dateRegex.test(start) || !dateRegex.test(end)) {
+      return res.json({
+        status: false,
+        message: "Định dạng ngày không hợp lệ. Vui lòng sử dụng định dạng DD/MM/YYYY",
+      });
+    }
+
+    //Các đơn hàng "Đã giao"
+    const ordersInPeriod = await orderModel
+      .find({
+        date: {
+          $gte: start,
+          $lte: end,
+        },
+        status: "Đã giao",
+      })
+      .sort({ date: 1 });
+
+    // Tạo danh sách tất cả các ngày trong khoảng
+    const allDates = [];
+    const startParts = start.split("/").map((part) => parseInt(part, 10));
+    const endParts = end.split("/").map((part) => parseInt(part, 10));
+
+    const startDate = new Date(startParts[2], startParts[1] - 1, startParts[0]);
+    const endDate = new Date(endParts[2], endParts[1] - 1, endParts[0]);
+
+    for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+      allDates.push(d.toLocaleDateString("en-GB"));
+    }
+
+    // Tính doanh thu cho từng ngày
+    const dailyRevenue = {};
+    allDates.forEach((date) => {
+      dailyRevenue[date] = 0;
+    });
+
+    ordersInPeriod.forEach((order) => {
+      if (dailyRevenue[order.date] !== undefined) {
+        dailyRevenue[order.date] += order.total_price;
+      }
+    });
+
+    // Tính tổng doanh thu trong khoảng thời gian
+    const totalRevenue = ordersInPeriod.reduce((total, order) => total + order.total_price, 0);
+
+    // Tính số đơn hàng trong khoảng thời gian
+    const totalOrders = ordersInPeriod.length;
+
+    return res.json({
+      status: true,
+      data: {
+        startDate: start,
+        endDate: end,
+        dailyRevenue,
+        totalRevenue,
+        totalOrders,
+      },
+    });
+  } catch (error) {
+    return res.json({
+      status: false,
+      message: error.message,
+    });
+  }
+});
 module.exports = router;
