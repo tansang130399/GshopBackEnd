@@ -9,8 +9,7 @@ router.post("/add", async (req, res) => {
   try {
     const { star, content, id_user, id_product } = req.body;
 
-    const objectRate = { star, content, id_user, id_product };
-    await ratingModel.create(objectRate);
+    const objectRate = await ratingModel.create({ star, content, id_user, id_product });
 
     res.json({ status: true, data: objectRate });
   } catch (e) {
