@@ -12,9 +12,9 @@ router.post("/add", async (req, res) => {
     const objectRate = { star, content, id_user, id_product };
     await ratingModel.create(objectRate);
 
-    res.json({ status: true, message: "Thêm thành công" });
+    res.json({ status: true, data: objectRate });
   } catch (e) {
-    res.json({ status: false, message: "Thêm thất bại" });
+    res.json({ status: false, message: e.message });
   }
 });
 
