@@ -94,7 +94,7 @@ router.get("/list", async (req, res, next) => {
   try {
     var data = await userModel.find();
     if (data) {
-      res.json({ status: true, data: data });
+      res.json({ status: true, data: data, length: data.length - 1 });
     } else {
       res.json({ status: false, mess: "Không có danh sách user" });
     }
@@ -159,7 +159,7 @@ router.get("/list_admin", async (req, res) => {
 router.get("/list_staff", async (req, res) => {
   try {
     const staff = await userModel.find({ role: "staff" });
-    res.status(200).json({ status: true, data: staff });
+    res.status(200).json({ status: true, data: staff, length: staff.length });
   } catch (e) {
     res.status(404).json({ status: false, message: e });
   }
@@ -188,9 +188,7 @@ router.put("/changPass", async (req, res) => {
 
     // Kiểm tra mật khẩu nhập lại có khớp không
     if (newPassword !== confirmPassword) {
-      return res
-        .status(400)
-        .json({ status: false, message: "Mật khẩu mới nhập lại không khớp" });
+      return res.status(400).json({ status: false, message: "Mật khẩu mới nhập lại không khớp" });
     }
 
     // Cập nhật lại mật khẩu user

@@ -11,7 +11,7 @@ router.get("/list", async (req, res, next) => {
   try {
     var data = await productModel.find();
     if (data) {
-      res.json({ status: true, data: data });
+      res.json({ status: true, data: data, length: data.length });
     } else {
       res.json({ status: false, mess: "Không có danh sách" });
     }

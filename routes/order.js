@@ -289,10 +289,7 @@ router.get("/revenue", async (req, res) => {
       status: "Đã giao",
     });
 
-    const totalRevenue = allCompletedOrders.reduce(
-      (total, order) => total + order.total_price,
-      0
-    );
+    const totalRevenue = allCompletedOrders.reduce((total, order) => total + order.total_price, 0);
 
     // Tính doanh thu theo tháng trong năm hiện tại
     const currentYear = today.getFullYear();
@@ -324,6 +321,7 @@ router.get("/revenue", async (req, res) => {
       status: true,
       data: {
         toDayRevenue,
+        toDayOrders,
         last7DaysRevenue,
         last30DaysRevenue,
         totalRevenue,
