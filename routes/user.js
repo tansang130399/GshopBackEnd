@@ -178,17 +178,12 @@ router.get("/list_user", async (req, res) => {
 // Đổi mật khẩu
 router.put("/changPass", async (req, res) => {
   try {
-    const { userId, newPassword, confirmPassword } = req.body;
+    const { user_id, email, newPassword } = req.body;
 
     // Kiểm tra user có tồn tại không
-    const user = await userModel.findById(userId);
+    const user = await userModel.findById(user_id);
     if (!user) {
       return res.status(404).json({ status: false, message: "Người dùng không tồn tại" });
-    }
-
-    // Kiểm tra mật khẩu nhập lại có khớp không
-    if (newPassword !== confirmPassword) {
-      return res.status(400).json({ status: false, message: "Mật khẩu mới nhập lại không khớp" });
     }
 
     // Cập nhật lại mật khẩu user
