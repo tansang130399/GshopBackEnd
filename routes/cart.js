@@ -150,7 +150,6 @@ router.get("/:id_user", async (req, res) => {
           return {
             ...item._doc,
             status: "Ngừng kinh doanh",
-            selected: false,
           };
         }
 
@@ -158,7 +157,6 @@ router.get("/:id_user", async (req, res) => {
           return {
             ...item._doc,
             status: "Hết hàng",
-            selected: false,
           };
         }
 
@@ -167,14 +165,12 @@ router.get("/:id_user", async (req, res) => {
             ...item._doc,
             status: `Chỉ còn ${product.quantity} sản phẩm trong kho`,
             quantity: product.quantity,
-            selected: false,
           };
         }
 
         return {
           ...item._doc,
           status: "Còn hàng",
-          selected: false,
         };
       })
     );
