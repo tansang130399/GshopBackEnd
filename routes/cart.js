@@ -140,35 +140,48 @@ router.get("/:id_user", async (req, res) => {
     if (!cart) {
       return res.json({ status: false, message: "Giỏ hàng trống" });
     }
-    /*
+
     // Kiểm tra trạng thái sản phẩm và cập nhật vào giỏ hàng
-    cart.items = cart.items.map((item) => {
-      const product = item.id_product;
-      if (!product) {
-        return { ...item._doc, status: "Sản phẩm không tồn tại" };
-      }
+    cart.items = await Promise.all(
+      cart.items.map(async (item) => {
+        const product = await Product.findById(item.id_product);
 
-      if (!product.isActive) {
-        return { ...item._doc, status: "Ngừng kinh doanh" };
-      }
+        if (!product.isActive) {
+          return {
+            ...item._doc,
+            status: "Ngừng kinh doanh",
+            selected: false,
+          };
+        }
 
-      if (product.quantity === 0) {
-        return { ...item._doc, status: "Hết hàng" };
-      }
+        if (product.quantity === 0) {
+          return {
+            ...item._doc,
+            status: "Hết hàng",
+            selected: false,
+          };
+        }
 
-      if (product.quantity < item.quantity) {
+        if (product.quantity < item.quantity) {
+          return {
+            ...item._doc,
+            status: `Chỉ còn ${product.quantity} sản phẩm trong kho`,
+            quantity: product.quantity,
+            selected: false,
+          };
+        }
+
         return {
           ...item._doc,
-          status: `Chỉ còn ${product.quantity} sản phẩm trong kho`,
+          status: "Còn hàng",
+          selected: false,
         };
-      }
-
-      return { ...item._doc, status: "Còn hàng" };
-    });
-*/
+      })
+    );
+    cart.save();
     res.json({ status: true, data: cart });
   } catch (error) {
-    res.json({ status: false, error: error.message });
+    res.json({ status: false, message: error.message });
   }
 });
 

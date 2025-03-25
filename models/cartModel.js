@@ -13,6 +13,7 @@ const cartSchema = new Schema({
       quantity: { type: Number, required: true, min: 1 },
       price: { type: Number, required: true },
       selected: { type: Boolean, default: false },
+      status: { type: String, default: "Còn hàng" },
     },
   ],
   totalPrice: { type: Number, default: 0 },
