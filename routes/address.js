@@ -114,4 +114,49 @@ router.get("/detail/:id_address", async (req, res) => {
     res.json({ status: false, message: error.message });
   }
 });
+
+// * Cập nhật selected của địa chỉ
+router.put("/update-selected", async (req, res) => {
+  try {
+    const { id_user, id_address, selected } = req.body;
+
+    if (typeof selected !== "boolean") {
+      return res.json({
+        status: false,
+        message: "Giá trị selected phải là true hoặc false",
+      });
+    }
+
+    // Tìm địa chỉ của người dùng
+    const address = await addressModel.find({ id_user });
+
+    if (!address.length) {
+      return res.json({ status: false, message: "Không tìm thấy địa chỉ" });
+    }
+
+    // Cập nhật trạng thái selected=false cho tất cả địa chỉ user
+    address.forEach((item) => {
+      item.selected = false;
+    });
+
+    if (id_address) {
+      const item = address.find((item) => item._id.toString() === id_address);
+      if (!item) {
+        return res.json({ status: false, message: "Địa chỉ không tồn tại" });
+      }
+      item.selected = selected;
+    } else {
+      address[0].selected = true;
+    }
+
+    address.sort((a, b) => (b.selected === true) - (a.selected === true));
+
+    await Promise.all(address.map((item) => item.save()));
+
+    res.json({ status: true, data: address });
+  } catch (error) {
+    console.error(error);
+    res.json({ status: false, message: error.message });
+  }
+});
 module.exports = router;

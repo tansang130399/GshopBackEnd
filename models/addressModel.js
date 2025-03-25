@@ -30,8 +30,11 @@ const AddressDeliverySchema = new Schema({
     type: ObjectId,
     ref: "user",
   },
+  selected: {
+    type: Boolean,
+    defaul: false,
+  },
 });
 
 module.exports =
-  mongoose.models.address_delivery ||
-  mongoose.model("address_delivery", AddressDeliverySchema);
+  mongoose.models.address_delivery || mongoose.model("address_delivery", AddressDeliverySchema);
