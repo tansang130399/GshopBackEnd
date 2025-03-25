@@ -187,7 +187,7 @@ router.put("/changPass", async (req, res) => {
     }
 
     // Cập nhật lại mật khẩu user
-    await userModel.findByIdAndUpdate(userId, { password: newPassword });
+    await userModel.findByIdAndUpdate(user_id, { password: newPassword });
     return res.status(200).json({ status: true, message: "Đổi mật khẩu thành công" });
   } catch (e) {
     return res.status(404).json({ status: false, message: "Đổi mật khẩu thất bại" });
