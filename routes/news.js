@@ -8,13 +8,13 @@ const uploadCloud = require("../ultils/upload_news");
 // Thêm tin tức
 router.post("/add", async (req, res) => {
   try {
-    const { title, content, id_user } = req.body;
+    const { title, content, id_user, images } = req.body;
 
     const user = await userModel.findById(id_user);
     if (user.role === "user") {
       return res.json({ status: false, message: "Staff, Admin mới có thể đăng tin tức" });
     }
-    const newNews = await newsModel.create({ title, content, id_user });
+    const newNews = await newsModel.create({ title, content, id_user, images });
 
     res.json({ status: true, data: newNews });
   } catch (e) {
@@ -142,9 +142,8 @@ router.delete("/delete", async (req, res) => {
 });
 
 //* Thêm ảnh cho content
-router.post("/upload-content/:id_news", [uploadCloud.array("image", 10)], async (req, res) => {
+router.post("/upload-content", [uploadCloud.array("image", 10)], async (req, res) => {
   try {
-    const { id_news } = req.params;
     const { files } = req;
 
     //kiểm tra
@@ -152,24 +151,24 @@ router.post("/upload-content/:id_news", [uploadCloud.array("image", 10)], async 
       return res.json({ status: false, message: "Vui lòng chọn ít nhất một ảnh" });
     }
 
-    let news = await newsModel.findById(id_news);
-    if (!news) {
-      return res.json({ status: false, message: "Tin tức không tồn tại" });
-    }
-
     const imageUrls = files.map((file) => file.path);
 
-    if (news.images.length === 0) {
-      news.images = imageUrls;
-    } else {
-      news.images = [...news.images, ...imageUrls];
-    }
+    // let news = await newsModel.findById(id_news);
+    // if (!news) {
+    //   return res.json({ status: false, message: "Tin tức không tồn tại" });
+    // }
 
-    await news.save();
+    // if (news.images.length === 0) {
+    //   news.images = imageUrls;
+    // } else {
+    //   news.images = [...news.images, ...imageUrls];
+    // }
+
+    // await news.save();
     return res.json({
       status: true,
       message: `Đã upload thành công ${files.length} ảnh`,
-      data: news,
+      data: imageUrls,
     });
   } catch (error) {
     return res.json({ status: false, message: error.message });
