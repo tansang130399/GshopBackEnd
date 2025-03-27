@@ -8,13 +8,13 @@ const uploadCloud = require("../ultils/upload_news");
 // Thêm tin tức
 router.post("/add", async (req, res) => {
   try {
-    const { title, content, id_user, images } = req.body;
+    const { title, content, id_user } = req.body;
 
     const user = await userModel.findById(id_user);
     if (user.role === "user") {
       return res.json({ status: false, message: "Staff, Admin mới có thể đăng tin tức" });
     }
-    const newNews = await newsModel.create({ title, content, id_user, images });
+    const newNews = await newsModel.create({ title, content, id_user });
 
     res.json({ status: true, data: newNews });
   } catch (e) {
