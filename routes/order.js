@@ -87,7 +87,7 @@ router.get("/list-user-delivered/:id_user", async (req, res) => {
 // Tạo đơn hàng, xóa sp được chọn khỏi giỏ hàng, tạo order detail, giảm sl tồn kho
 router.post("/create-order", async (req, res) => {
   try {
-    const { id_user, id_payment, id_address } = req.body;
+    const { id_user, id_payment, name, address, phone } = req.body;
 
     // Tìm giỏ hàng của user
     const order = await cartModel.findOne({ id_user });
@@ -108,7 +108,9 @@ router.post("/create-order", async (req, res) => {
     const newOrder = await orderModel.create({
       id_user,
       id_payment,
-      id_address,
+      name,
+      address,
+      phone,
       total_price: order.totalPrice,
     });
 
@@ -415,6 +417,54 @@ router.get("/revenue-daily", async (req, res) => {
       status: false,
       message: error.message,
     });
+  }
+});
+
+//* danh sách sản phẩm bán chạy theo số lượng bán được
+// GET /api/statistics/top-products
+router.get("/top-products", async (req, res) => {
+  try {
+    const result = await detailOrderModel.aggregate([
+      {
+        $group: {
+          _id: "$id_product", // gom theo sản phẩm
+          totalSold: { $sum: "$quantity" }, // cộng dồn số lượng bán
+          totalRevenue: {
+            $sum: {
+              $multiply: ["$quantity", "$price"],
+            },
+          },
+        },
+      },
+      {
+        $lookup: {
+          from: "products",
+          localField: "_id",
+          foreignField: "_id",
+          as: "productInfo",
+        },
+      },
+      {
+        $unwind: "$productInfo",
+      },
+      {
+        $sort: { totalSold: -1 }, // sắp xếp giảm dần
+      },
+      {
+        $project: {
+          _id: 0,
+          id_product: "$_id",
+          name: "$productInfo.name",
+          totalSold: 1,
+          totalRevenue: 1,
+        },
+      },
+    ]);
+
+    res.json({ status: true, data: result });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ status: false, message: "Lỗi server" });
   }
 });
 module.exports = router;

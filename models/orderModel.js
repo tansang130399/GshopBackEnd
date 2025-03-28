@@ -21,10 +21,18 @@ const orderSchema = new Schema({
     ref: "payment_method",
     required: true,
   },
-  id_address: {
-    type: ObjectId,
-    ref: "address_delivery",
+  name: {
+    type: String,
     required: true,
+  },
+  address: {
+    type: String,
+    required: true,
+  },
+  phone: {
+    type: String,
+    required: true,
+    unique: true,
   },
 });
 
