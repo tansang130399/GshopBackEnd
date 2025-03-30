@@ -323,7 +323,7 @@ router.get("/revenue", async (req, res) => {
       status: true,
       data: {
         toDayRevenue,
-        toDayOrders,
+        toDayOrders: toDayOrders.length,
         last7DaysRevenue,
         last30DaysRevenue,
         totalRevenue,

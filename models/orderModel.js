@@ -8,6 +8,10 @@ const orderSchema = new Schema({
     type: String,
     default: () => new Date().toLocaleDateString("en-GB"),
   },
+  time: {
+    type: String,
+    default: () => new Date().toLocaleTimeString("vi-VN", { hour12: false }),
+  },
   total_price: { type: Number, required: true },
   shipping_fee: { type: Number, default: 29000 },
   status: { type: String, default: "Đang xử lý" },
