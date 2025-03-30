@@ -5,8 +5,9 @@ const ObjectId = Schema.ObjectId;
 const orderSchema = new Schema({
   id: { type: ObjectId },
   date: {
-    type: String,
-    default: () => new Date().toLocaleDateString("en-GB"),
+    type: Date,
+    default: () => new Date(new Date().getTime() + 7 * 60 * 60 * 1000),
+    //default: () => new Date().toLocaleDateString("en-GB"),
   },
   time: {
     type: String,
