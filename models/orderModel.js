@@ -6,8 +6,8 @@ const orderSchema = new Schema({
   id: { type: ObjectId },
   date: {
     type: Date,
-    default: () => new Date(new Date().getTime() + 7 * 60 * 60 * 1000),
-    //default: () => new Date().toLocaleDateString("en-GB"),
+    // default: () => new Date(new Date().getTime() + 7 * 60 * 60 * 1000),
+    default: () => new Date().toLocaleDateString("en-GB"),
   },
   time: {
     type: String,
