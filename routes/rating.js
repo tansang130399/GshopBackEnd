@@ -117,6 +117,20 @@ router.get("/list", async (req, res) => {
   }
 });
 
+// Lấy danh sách rating theo id_user
+router.get("/list-by-iduser", async (req, res) => {
+  try {
+    const { id_user } = req.query;
+    const data = await ratingModel.find({ id_user });
+    if (!data.length) {
+      return res.json({ status: false, message: "Không có danh sách đánh giá của User này" });
+    }
+    res.json({ status: true, data: data });
+  } catch (e) {
+    res.json({ status: false, message: e });
+  }
+});
+
 // Lấy danh sách đánh giá theo sản phẩm
 router.get("/list_product", async (req, res) => {
   try {

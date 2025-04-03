@@ -108,20 +108,6 @@ router.get("/list", async (req, res) => {
   }
 });
 
-// Lấy danh sách tin tức theo id_user
-router.get("/list-by-iduser", async (req, res) => {
-  try {
-    const { id_user } = req.query;
-    const data = await newsModel.find({ id_user });
-    if (!data.length) {
-      return res.json({ status: false, message: "Không có tin tức cho User này" });
-    }
-    res.json({ status: true, data: data });
-  } catch (e) {
-    res.json({ status: false, message: e });
-  }
-});
-
 // Lấy chi tiết tin tức
 router.get("/detail_news", async (req, res) => {
   try {
