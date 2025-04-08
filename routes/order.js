@@ -4,6 +4,7 @@ const orderModel = require("../models/orderModel");
 const detailOrderModel = require("../models/detailOrderModel");
 const cartModel = require("../models/cartModel");
 const productModel = require("../models/productModel");
+const categoryModel = require("../models/categoryModel");
 
 //* /order
 //* lấy tất cả đơn hàng
@@ -420,20 +421,16 @@ router.get("/revenue-daily", async (req, res) => {
   }
 });
 
-//* danh sách sản phẩm bán chạy theo số lượng bán được
-// GET /api/statistics/top-products
+//* danh sách sản phẩm theo sll bán được, theo doanh thu.
+//* Danh sách tỉ lệ từng loại sản phẩm theo sl bán được
 router.get("/top-products", async (req, res) => {
   try {
-    const result = await detailOrderModel.aggregate([
+    const pipeline = [
       {
         $group: {
-          _id: "$id_product", // gom theo sản phẩm
-          totalSold: { $sum: "$quantity" }, // cộng dồn số lượng bán
-          totalRevenue: {
-            $sum: {
-              $multiply: ["$quantity", "$price"],
-            },
-          },
+          _id: "$id_product",
+          totalSold: { $sum: "$quantity" },
+          totalRevenue: { $sum: { $multiply: ["$quantity", "$unit_price"] } },
         },
       },
       {
@@ -444,12 +441,7 @@ router.get("/top-products", async (req, res) => {
           as: "productInfo",
         },
       },
-      {
-        $unwind: "$productInfo",
-      },
-      {
-        $sort: { totalSold: -1 }, // sắp xếp giảm dần
-      },
+      { $unwind: "$productInfo" },
       {
         $project: {
           _id: 0,
@@ -459,12 +451,76 @@ router.get("/top-products", async (req, res) => {
           totalRevenue: 1,
         },
       },
+    ];
+
+    const byQuantity = await detailOrderModel.aggregate([
+      ...pipeline,
+      { $sort: { totalSold: -1 } },
     ]);
 
-    res.json({ status: true, data: result });
+    const byRevenue = await detailOrderModel.aggregate([
+      ...pipeline,
+      { $sort: { totalRevenue: -1 } },
+    ]);
+
+    const categoryStats = await categoryModel.aggregate([
+      {
+        $lookup: {
+          from: "products",
+          localField: "_id",
+          foreignField: "id_category",
+          as: "products",
+        },
+      },
+      {
+        $unwind: {
+          path: "$products",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: "detail_orders",
+          localField: "products._id",
+          foreignField: "id_product",
+          as: "orders",
+        },
+      },
+      {
+        $unwind: {
+          path: "$orders",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $group: {
+          _id: "$_id",
+          name: { $first: "$name_type" },
+          totalSold: { $sum: { $ifNull: ["$orders.quantity", 0] } },
+        },
+      },
+    ]);
+
+    const totalSoldAll = categoryStats.reduce((sum, item) => sum + item.totalSold, 0);
+
+    const categoryRatio = categoryStats.map((item) => ({
+      id_category: item._id,
+      name: item.name,
+      totalSold: item.totalSold,
+      percentage:
+        totalSoldAll === 0 ? "0%" : ((item.totalSold / totalSoldAll) * 100).toFixed(2) + "%",
+    }));
+
+    res.json({
+      status: true,
+      byQuantity,
+      byRevenue,
+      categoryRatio,
+    });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ status: false, message: "Lỗi server" });
+    res.status(500).json({ status: false, message: error.message });
   }
 });
+
 module.exports = router;
