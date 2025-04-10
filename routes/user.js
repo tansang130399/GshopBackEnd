@@ -2,6 +2,7 @@ var express = require("express");
 const userModel = require("../models/userModel");
 var router = express.Router();
 const uploadCloud = require("../ultils/upload_avatar");
+var sendMail = require("../utils/configMail");
 
 //* /user
 
@@ -175,25 +176,6 @@ router.get("/list_user", async (req, res) => {
   }
 });
 
-// Đổi mật khẩu
-router.put("/changPass", async (req, res) => {
-  try {
-    const { user_id, email, newPassword } = req.body;
-
-    // Kiểm tra user có tồn tại không
-    const user = await userModel.findById(user_id);
-    if (!user) {
-      return res.status(404).json({ status: false, message: "Người dùng không tồn tại" });
-    }
-
-    // Cập nhật lại mật khẩu user
-    await userModel.findByIdAndUpdate(user_id, { password: newPassword });
-    return res.status(200).json({ status: true, message: "Đổi mật khẩu thành công" });
-  } catch (e) {
-    return res.status(404).json({ status: false, message: "Đổi mật khẩu thất bại" });
-  }
-});
-
 // Lấy thông tin chi tiết của user
 router.get("/detail_user", async (req, res) => {
   try {
@@ -296,6 +278,105 @@ router.put("/update-staff/:id_user", async (req, res) => {
   } catch (error) {
     console.error(error);
     res.json({ status: false, message: error.message });
+  }
+});
+
+//* Gửi mã xác nhận qua mail
+const otpStore = {};
+router.post("/send-mail", async function (req, res, next) {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ status: false, message: "Thiếu email" });
+    }
+
+    // Tạo mã otp
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    otpStore[email] = {
+      code: otp,
+      expires: Date.now() + 1 * 60 * 1000, // hết hạn sau 1 phút
+    };
+
+    const mailOptions = {
+      from: "GShop <pn93948848@gmail.com>",
+      to: email,
+      subject: "Mã xác nhận đổi mật khẩu",
+      html: `<p>Mã xác nhận của bạn là: <b>${otp}</b></p><p>Mã có hiệu lực trong 5 phút.</p>`,
+    };
+
+    await sendMail.transporter.sendMail(mailOptions);
+
+    return res.status(200).json({ status: true, message: "Gửi mail thành công", code: otp });
+  } catch (e) {
+    return res.status(404).json({ status: false, message: "Gửi mail thất bại" });
+  }
+});
+
+//* Kiểm tra mã xác nhận
+router.post("/verify-code", (req, res) => {
+  const { email, code } = req.body;
+  const record = otpStore[email];
+
+  if (!record) {
+    return res.status(400).json({ status: false, message: "Không tìm thấy mã xác nhận" });
+  }
+
+  if (record.expires < Date.now()) {
+    delete otpStore[email];
+    return res.status(400).json({ status: false, message: "Mã đã hết hạn" });
+  }
+
+  if (record.code !== code) {
+    return res.status(400).json({ status: false, message: "Mã xác nhận không đúng" });
+  }
+
+  return res.status(200).json({ status: true, message: "Mã xác nhận hợp lệ" });
+});
+
+//* Quên mật khẩu
+router.put("/forgotPass", async (req, res) => {
+  try {
+    const { email, newPassword, confirmPassword } = req.body;
+
+    if (!email || !newPassword || !confirmPassword){
+      return res.status(400).json({ status: false, message: "Thiếu thông tin" });
+    }
+
+    // const record = otpStore[email];
+    // if(!record || record.code !== code || record.expires < Date.now()){
+    //   return res.status(400).json({ status: false, message: "Mã xác nhận không hợp lệ" });
+    // }
+
+    const user = await userModel.findOne({ email });
+    if(!user){
+      return res.status(404).json({ status: false, message: "Người dùng không tồn tại" });
+    }
+
+    await userModel.findByIdAndUpdate(user._id, {password: newPassword});
+    //delete otpStore[email]; // Xoá mã đã dùng
+
+    return res.status(200).json({ status: true, message: "Đổi mật khẩu thành công" });
+  } catch (e) {
+    return res.status(500).json({ status: false, message: "Đổi mật khẩu thất bại" });
+  }
+})
+
+//* Đổi mật khẩu
+router.put("/changPass", async (req, res) => {
+  try {
+    const { user_id, newPassword } = req.body;
+
+    // Kiểm tra user có tồn tại không
+    const user = await userModel.findById(user_id);
+    if (!user) {
+      return res.status(404).json({ status: false, message: "Người dùng không tồn tại" });
+    }
+
+    // Cập nhật lại mật khẩu user
+    await userModel.findByIdAndUpdate(user_id, { password: newPassword });
+    return res.status(200).json({ status: true, message: "Đổi mật khẩu thành công" });
+  } catch (e) {
+    return res.status(404).json({ status: false, message: "Đổi mật khẩu thất bại" });
   }
 });
 
