@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OTP GShop</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+      color: #2c2c2c;
+    }
+
+    p{
+        color: #fff;
+    }
+
+    .container {
+      max-width: 520px;
+      margin: 30px auto;
+      background-color: #2c2c2c;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    }
+
+    .header {
+      background-color: #E43727; /* GShop brand red */
+      padding: 24px 20px;
+      text-align: center;
+    }
+
+    .header img {
+      height: 60px;
+      margin-bottom: 8px;
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 20px;
+      color: #fff;
+      letter-spacing: 1px;
+    }
+
+    .content {
+      padding: 24px 28px;
+    }
+
+    .otp-box {
+      background-color: #E9F1FB;
+      border-left: 6px solid #266FDA;
+      padding: 18px 24px;
+      font-size: 24px;
+      font-weight: bold;
+      text-align: center;
+      margin: 20px 0;
+      color: #266FDA;
+      border-radius: 10px;
+      letter-spacing: 2px;
+    }
+
+    .footer {
+      font-size: 14px;
+      color: #555;
+      margin-top: 30px;
+      text-align: left;
+    }
+
+    .note {
+      font-size: 13px;
+      color: #888;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Xác Minh Tài Khoản</h1>
+    </div>
+
+    <div class="content">
+      <p>Xin chào</p>
+
+      <p>
+        Cảm ơn bạn đã sử dụng dịch vụ của GShop. Để hoàn tất quá trình xác minh,
+        vui lòng sử dụng mã OTP dưới đây:
+      </p>
+
+      <div class="otp-box">
+        Mã OTP của bạn là: {{otp}}
+      </div>
+
+      <p>
+        Mã xác minh này sẽ hết hạn sau 5 phút. Vui lòng không chia sẻ mã với bất kỳ ai.
+      </p>
+
+      <div class="footer">
+        <p>Trân trọng,<br />Đội ngũ GShop</p>
+        <p class="note">Nếu bạn không yêu cầu thao tác này, hãy bỏ qua email này.</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
