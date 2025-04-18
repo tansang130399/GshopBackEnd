@@ -389,12 +389,16 @@ router.put("/forgotPass", async (req, res) => {
 //* Đổi mật khẩu
 router.put("/changPass", async (req, res) => {
   try {
-    const { user_id, newPassword } = req.body;
+    const { user_id, oldPassword, newPassword } = req.body;
 
     // Kiểm tra user có tồn tại không
     const user = await userModel.findById(user_id);
     if (!user) {
       return res.status(404).json({ status: false, message: "Người dùng không tồn tại" });
+    }
+
+    if(user.password !== oldPassword){
+      return res.status(400).json({status: false, message: "Mật khẩu cũ không đúng"});
     }
 
     // Cập nhật lại mật khẩu user
