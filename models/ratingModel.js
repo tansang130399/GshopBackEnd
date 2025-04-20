@@ -9,6 +9,10 @@ const ratingSchema = new Schema({
     type: String,
     default: () => new Date().toLocaleDateString("en-GB"),
   },
+  time: {
+    type: String,
+    default: () => new Date().toLocaleTimeString("vi-VN", { hour12: false }),
+  },
   content: { type: String, required: true },
   images: {
     type: [String],
@@ -23,6 +27,10 @@ const ratingSchema = new Schema({
     type: ObjectId,
     ref: "product",
   },
+  id_order: {
+    type: ObjectId,
+    ref: "order"
+  }
 });
 
 const Rating = mongoose.model("rating", ratingSchema);
