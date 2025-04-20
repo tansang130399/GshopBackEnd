@@ -7,9 +7,9 @@ const uploadCloud = require("../ultils/upload_rating");
 // Thêm đánh giá
 router.post("/add", async (req, res) => {
   try {
-    const { star, content, id_user, id_product } = req.body;
+    const { star, content, id_user, id_product, id_order } = req.body;
 
-    const objectRate = await ratingModel.create({ star, content, id_user, id_product });
+    const objectRate = await ratingModel.create({ star, content, id_user, id_product, id_order });
 
     res.json({ status: true, data: objectRate });
   } catch (e) {
