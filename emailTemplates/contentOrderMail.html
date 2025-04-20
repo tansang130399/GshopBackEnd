@@ -42,11 +42,10 @@
       display: inline-block;
       margin-left: 5px;
       color: #000;
-      /* Giữ màu mặc định */
     }
 
     h3 {
-      color: #b71c1c;
+      color: #E43727;
       border-bottom: 2px solid #f1f1f1;
       padding-bottom: 5px;
       margin-top: 30px;
@@ -87,7 +86,7 @@
     }
 
     .totals span {
-      color: #e53935;
+      color: #E43727;
       font-weight: bold;
     }
 
@@ -97,7 +96,7 @@
     }
 
     .brand {
-      color: #e53935;
+      color: #E43727;
       font-weight: bold;
     }
   </style>
@@ -107,10 +106,7 @@
   <div class="body">
     <p class="greeting">Xin chào <span class="brand">{{userName}}</span>,</p>
 
-    <p class="greeting">
-      Trạng thái đơn hàng của bạn <strong>#{{orderID}}</strong> vừa được cập nhật thành:
-      <span id="statusText" class="status">{{status}}</span>
-    </p>
+    {{statusContent}}
 
     <h3>Thông tin đơn hàng</h3>
     <ul class="order-info">

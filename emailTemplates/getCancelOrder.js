@@ -1,8 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 
-const getCancelOrder = (userName, orderID, status, paymentName, orderDetails, orderInfo) => {
-    const templatePath = path.join(__dirname, "contentCancelOrder.html");
+const getCancelOrder = (userName, orderID, paymentName, orderDetails, orderInfo) => {
+    const templatePath = path.join(__dirname, "contentOrderMail.html");
     let html = fs.readFileSync(templatePath, "utf8");
 
     // Tạo HTML từ mảng chi tiết đơn hàng
@@ -22,7 +22,6 @@ const getCancelOrder = (userName, orderID, status, paymentName, orderDetails, or
     html = html
         .replace(/{{userName}}/g, userName)
         .replace(/{{orderID}}/g, orderID)
-        .replace(/{{status}}/g, status)
         .replace(/{{paymentName}}/g, paymentName)
         .replace(/{{orderDetails}}/g, detailsHTML)
 

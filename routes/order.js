@@ -144,6 +144,48 @@ router.post("/create-order", async (req, res) => {
     order.items = order.items.filter((item) => !item.selected);
     await order.save();
 
+    // Lấy thông tin để gửi mail khi đặt hàng thành công
+    const user = await userModel.findById(id_user);
+    const orderDetails = await detailOrderModel.find({ id_order: newOrder._id });
+
+    const productOrder = await Promise.all(orderDetails.map(async (detail) => {
+      const product = await productModel.findById(detail.id_product);
+      const imageProduct = await imageProductModel.findOne({ id_product: detail.id_product });
+
+      return {
+        ...detail._doc,
+        productName: product ? product.name : "Không xác định",
+        productPrice: product ? product.price : "Không xác định",
+        productImage: imageProduct && imageProduct.image.length > 0 ? imageProduct.image[0] : null
+      };
+    }));
+
+    const productTotal = productOrder.reduce((sum, item) => {
+      return sum + item.unit_price * item.quantity;
+    }, 0);
+
+    const payment = await paymentMethod.findById(id_payment);
+    const paymentName = payment ? payment.name : "Không xác định";
+
+    await sendOrderStatusEmail(
+      user.email,
+      newOrder._id,
+      newOrder.status,
+      user.name,
+      paymentName,
+      productOrder,
+      {
+        total_price: newOrder.total_price,
+        shipping_fee: newOrder.shipping_fee,
+        date: newOrder.date,
+        time: newOrder.time,
+        name: newOrder.name,
+        phone: newOrder.phone,
+        address: newOrder.address,
+        productTotal
+      }
+    )
+
     res.json({
       status: true,
       data: newOrder,
@@ -153,24 +195,12 @@ router.post("/create-order", async (req, res) => {
   }
 });
 
-// Hàm gửi mail xin lỗi khi đơn hàng bị hủy
-const sendCancelOrderEmail = async (email, orderID, status, userName, paymentName, orderDetails, orderInfo) => {
-  const mailOptions = {
-    from: "GShop <pn93948848@gmail.com>",
-    to: email,
-    subject: `Thông báo về việc hủy đơn hàng`,
-    html: getCancelOrder(userName, orderID, status, paymentName, orderDetails, orderInfo)
-  }
-
-  await sendMail.transporter.sendMail(mailOptions)
-}
-
 // Hàm gửi mail khi trạng thái đơn hàng thay đổi
 const sendOrderStatusEmail = async (email, orderID, status, userName, paymentName, orderDetails, orderInfo) => {
   const mailOptions = {
     from: "GShop <pn93948848@gmail.com>",
     to: email,
-    subject: `Cập nhật đơn hàng`,
+    subject: `Thông báo cập nhật đơn hàng`,
     html: getOrderMail(userName, orderID, status, paymentName, orderDetails, orderInfo)
   };
 
@@ -218,47 +248,24 @@ router.put("/update/:id_order", async (req, res, next) => {
 
     const updated = await orderModel.findByIdAndUpdate(id_order, { status }, { new: true });
 
-    if (status == 'Đã hủy') {
-      await sendCancelOrderEmail(
-        user.email,
-        order._id,
-        status,
-        user.name,
-        paymentName,
-        productOrder,
-        {
-          total_price: order.total_price,
-          shipping_fee: order.shipping_fee,
-          date: order.date,
-          time: order.time,
-          name: order.name,
-          phone: order.phone,
-          address: order.address,
-          productTotal
-        }
-      );
-    } else {
-      await sendOrderStatusEmail(
-        user.email,
-        order._id,
-        status,
-        user.name,
-        paymentName,
-        productOrder,
-        {
-          total_price: order.total_price,
-          shipping_fee: order.shipping_fee,
-          date: order.date,
-          time: order.time,
-          name: order.name,
-          phone: order.phone,
-          address: order.address,
-          productTotal
-        }
-      );
-    }
-
-
+    await sendOrderStatusEmail(
+      user.email,
+      order._id,
+      status,
+      user.name,
+      paymentName,
+      productOrder,
+      {
+        total_price: order.total_price,
+        shipping_fee: order.shipping_fee,
+        date: order.date,
+        time: order.time,
+        name: order.name,
+        phone: order.phone,
+        address: order.address,
+        productTotal
+      }
+    );
 
     res.json({ status: true, data: updated });
   } catch (error) {
