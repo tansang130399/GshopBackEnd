@@ -527,16 +527,24 @@ router.post("/revenue-daily", async (req, res) => {
       });
     }
 
+    // Convert định dạng date string sang Date object
+    const parseDateString = (dateStr) => {
+      const [day, month, year] = dateStr.split("/").map(Number);
+      return new Date(year, month - 1, day); // month trong JS bắt đầu từ 0
+    };
+
     //Các đơn hàng "Đã giao"
-    const ordersInPeriod = await orderModel
-      .find({
-        date: {
-          $gte: start,
-          $lte: end,
-        },
-        status: "Đã giao",
-      })
-      .sort({ date: 1 });
+    const allOrders = await orderModel.find({ status: "Đã giao" });
+
+    const startD = parseDateString(start);
+    const endD = parseDateString(end);
+
+    const ordersInPeriod = allOrders.filter((order) => {
+      const orderDate = parseDateString(order.date);
+      return orderDate >= startD && orderDate <= endD;
+    });
+
+    console.log(ordersInPeriod);
 
     // Tạo danh sách tất cả các ngày trong khoảng
     const allDates = [];
