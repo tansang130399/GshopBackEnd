@@ -12,6 +12,7 @@ const newsSchema = new Schema({
     default: "url",
     required: true,
   },
+
   images: {
     type: [String],
     default: [],
@@ -33,6 +34,11 @@ const newsSchema = new Schema({
   date: {
     type: String,
     default: () => new Date().toLocaleDateString("en-GB"),
+  },
+
+  time: {
+    type: String,
+    default: () => new Date().toLocaleTimeString("vi-VN", { hour12: false }),
   },
 
   id_user: {

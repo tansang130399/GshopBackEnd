@@ -1,10 +1,16 @@
 var express = require("express");
 var router = express.Router();
+const userModel = require("../models/userModel");
 const orderModel = require("../models/orderModel");
 const detailOrderModel = require("../models/detailOrderModel");
 const cartModel = require("../models/cartModel");
 const productModel = require("../models/productModel");
+const imageProductModel = require("../models/imageProductModel");
+const paymentMethod = require("../models/paymentModel");
 const categoryModel = require("../models/categoryModel");
+var sendMail = require("../utils/configMail");
+const getOrderMail = require("../emailTemplates/getOrderMail");
+const getCancelOrder = require("../emailTemplates/getCancelOrder");
 const { JWT } = require("google-auth-library");
 
 //* /order
@@ -160,6 +166,51 @@ router.post("/create-order", async (req, res) => {
     order.items = order.items.filter((item) => !item.selected);
     await order.save();
 
+    // Lấy thông tin để gửi mail khi đặt hàng thành công
+    const user = await userModel.findById(id_user);
+    const orderDetails = await detailOrderModel.find({ id_order: newOrder._id });
+
+    const productOrder = await Promise.all(
+      orderDetails.map(async (detail) => {
+        const product = await productModel.findById(detail.id_product);
+        const imageProduct = await imageProductModel.findOne({ id_product: detail.id_product });
+
+        return {
+          ...detail._doc,
+          productName: product ? product.name : "Không xác định",
+          productPrice: product ? product.price : "Không xác định",
+          productImage:
+            imageProduct && imageProduct.image.length > 0 ? imageProduct.image[0] : null,
+        };
+      })
+    );
+
+    const productTotal = productOrder.reduce((sum, item) => {
+      return sum + item.unit_price * item.quantity;
+    }, 0);
+
+    const payment = await paymentMethod.findById(id_payment);
+    const paymentName = payment ? payment.name : "Không xác định";
+
+    await sendOrderStatusEmail(
+      user.email,
+      newOrder._id,
+      newOrder.status,
+      user.name,
+      paymentName,
+      productOrder,
+      {
+        total_price: newOrder.total_price,
+        shipping_fee: newOrder.shipping_fee,
+        date: newOrder.date,
+        time: newOrder.time,
+        name: newOrder.name,
+        phone: newOrder.phone,
+        address: newOrder.address,
+        productTotal,
+      }
+    );
+
     res.json({
       status: true,
       data: newOrder,
@@ -168,6 +219,26 @@ router.post("/create-order", async (req, res) => {
     res.json({ status: false, message: error.message });
   }
 });
+
+// Hàm gửi mail khi trạng thái đơn hàng thay đổi
+const sendOrderStatusEmail = async (
+  email,
+  orderID,
+  status,
+  userName,
+  paymentName,
+  orderDetails,
+  orderInfo
+) => {
+  const mailOptions = {
+    from: "GShop <pn93948848@gmail.com>",
+    to: email,
+    subject: `Thông báo cập nhật đơn hàng`,
+    html: getOrderMail(userName, orderID, status, paymentName, orderDetails, orderInfo),
+  };
+
+  await sendMail.transporter.sendMail(mailOptions);
+};
 
 // Thay đổi status order
 router.put("/update/:id_order", async (req, res, next) => {
@@ -179,7 +250,58 @@ router.put("/update/:id_order", async (req, res, next) => {
       return res.json({ status: false, mess: "Thiếu dữ liệu đầu vào" });
     }
 
+    const order = await orderModel.findById(id_order);
+    if (!order) {
+      return res.json({ status: false, mess: "Đơn hàng không tồn tại" });
+    }
+
+    const user = await userModel.findById(order.id_user);
+    if (!user || !user.email) {
+      return res.json({ status: false, mess: "Không tìm thấy người dùng" });
+    }
+
+    const payment = await paymentMethod.findById(order.id_payment);
+    const paymentName = payment ? payment.name : "Không xác định";
+
+    const orderDetails = await detailOrderModel.find({ id_order: id_order });
+    const productOrder = await Promise.all(
+      orderDetails.map(async (detail) => {
+        const product = await productModel.findById(detail.id_product);
+        const imageProduct = await imageProductModel.findOne({ id_product: detail.id_product });
+        return {
+          ...detail._doc,
+          productName: product ? product.name : "Không xác định",
+          productPrice: product ? product.price : "Không xác định",
+          productImage:
+            imageProduct && imageProduct.image.length > 0 ? imageProduct.image[0] : null,
+        };
+      })
+    );
+
+    const productTotal = productOrder.reduce((sum, item) => {
+      return sum + item.unit_price * item.quantity;
+    }, 0);
+
     const updated = await orderModel.findByIdAndUpdate(id_order, { status }, { new: true });
+
+    await sendOrderStatusEmail(
+      user.email,
+      order._id,
+      status,
+      user.name,
+      paymentName,
+      productOrder,
+      {
+        total_price: order.total_price,
+        shipping_fee: order.shipping_fee,
+        date: order.date,
+        time: order.time,
+        name: order.name,
+        phone: order.phone,
+        address: order.address,
+        productTotal,
+      }
+    );
 
     res.json({ status: true, data: updated });
   } catch (error) {

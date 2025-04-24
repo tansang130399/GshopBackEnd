@@ -3,6 +3,7 @@ const userModel = require("../models/userModel");
 var router = express.Router();
 const uploadCloud = require("../ultils/upload_avatar");
 var sendMail = require("../utils/configMail");
+const getOTPCode = require("../emailTemplates/getOTPMail");
 
 //* /user
 
@@ -281,6 +282,17 @@ router.put("/update-staff/:id_user", async (req, res) => {
   }
 });
 
+const sendOTPCode = async (email, otp) => {
+  const mailOptions = {
+    from: "<GShop pn93948848@gmail.com>",
+    to: email,
+    subject: "Đổi lại mật khẩu",
+    html: getOTPCode(email, otp)
+  };
+
+  await sendMail.transporter.sendMail(mailOptions);
+}
+
 //* Gửi mã xác nhận qua mail
 const otpStore = {};
 router.post("/send-mail", async function (req, res, next) {
@@ -294,17 +306,30 @@ router.post("/send-mail", async function (req, res, next) {
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     otpStore[email] = {
       code: otp,
-      expires: Date.now() + 1 * 60 * 1000, // hết hạn sau 1 phút
+      expires: Date.now() + 5 * 60 * 1000, // hết hạn sau 5 phút
     };
 
-    const mailOptions = {
-      from: "GShop <pn93948848@gmail.com>",
-      to: email,
-      subject: "Mã xác nhận đổi mật khẩu",
-      html: `<p>Mã xác nhận của bạn là: <b>${otp}</b></p><p>Mã có hiệu lực trong 5 phút.</p>`,
-    };
+    await sendOTPCode(email, otp);
 
-    await sendMail.transporter.sendMail(mailOptions);
+  //   const mailOptions = {
+  //     from: "GShop <pn93948848@gmail.com>",
+  //     to: email,
+  //     subject: "Mã xác nhận đổi mật khẩu",
+  //     html: `
+  //   <p>Xin chào ${email},</p>
+
+  //   <p>Chúng tôi đã nhận yêu cầu mã dùng một lần để dùng cho tài khoản GShop của bạn.</p>
+
+  //   <p><strong>Mã dùng một lần của bạn là: <span style="font-size: 18px;">${otp}</span></strong></p>
+
+  //   <p>Chỉ nhập mã này vào ứng dụng chính thức. Không chia sẻ mã với bất kỳ ai. Chúng tôi sẽ không bao giờ yêu cầu cung cấp mã này bên ngoài một nền tảng chính thức.</p>
+
+  //   <p>Xin cảm ơn,<br/>
+  //   Nhóm tài khoản GShop</p>
+  // `,
+  //   };
+
+    //await sendMail.transporter.sendMail(mailOTP);
 
     return res.status(200).json({ status: true, message: "Gửi mail thành công", code: otp });
   } catch (e) {
@@ -364,12 +389,16 @@ router.put("/forgotPass", async (req, res) => {
 //* Đổi mật khẩu
 router.put("/changPass", async (req, res) => {
   try {
-    const { user_id, newPassword } = req.body;
+    const { user_id, oldPassword, newPassword } = req.body;
 
     // Kiểm tra user có tồn tại không
     const user = await userModel.findById(user_id);
     if (!user) {
       return res.status(404).json({ status: false, message: "Người dùng không tồn tại" });
+    }
+
+    if(user.password !== oldPassword){
+      return res.status(400).json({status: false, message: "Mật khẩu cũ không đúng"});
     }
 
     // Cập nhật lại mật khẩu user

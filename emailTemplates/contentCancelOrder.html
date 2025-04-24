@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chi tiết đơn hàng</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            color: #333;
+            max-width: 700px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+        }
+
+        * {
+            color: #000;
+        }
+
+        .brand-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .brand-logo {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .greeting {
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        .status {
+            font-weight: bold;
+            padding: 4px 10px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-left: 5px;
+            color: #000;
+        }
+
+        .status.processing {
+            color: #2196f3;
+        }
+
+        .status.cancelled {
+            color: #e53935;
+        }
+
+        .status.shipping {
+            color: #fb8c00;
+        }
+
+        .status.delivered {
+            color: #43a047;
+        }
+
+        h3 {
+            color: #b71c1c;
+            border-bottom: 2px solid #f1f1f1;
+            padding-bottom: 5px;
+            margin-top: 30px;
+        }
+
+        ul.order-info {
+            list-style: none;
+            padding-left: 0;
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        table.order-details {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        table.order-details thead {
+            background-color: #fcebea;
+        }
+
+        table.order-details th,
+        table.order-details td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        table.order-details tbody tr:hover {
+            background-color: #f9f9f9;
+        }
+
+        .totals {
+            margin-top: 20px;
+            font-size: 15px;
+        }
+
+        .totals span {
+            color: #e53935;
+            font-weight: bold;
+        }
+
+        .thank-you {
+            margin-top: 30px;
+            font-size: 15px;
+        }
+
+        .brand {
+            color: #e53935;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="body">
+        <p class="greeting">Kính gửi <span class="brand">{{userName}}</span>,</p>
+
+        <p id="cancellationMessage" class="thank-you">
+            Chúng tôi rất tiếc phải thông báo rằng đơn hàng <strong>#{{orderID}}</strong> đã bị <span
+                class="status cancelled">hủy</span> do một số lý do ngoài ý muốn.<br />
+            GShop chân thành <strong>xin lỗi</strong> vì sự bất tiện này. Nếu bạn đã thanh toán trước, chúng tôi sẽ hoàn
+            tiền trong vòng <strong>3-5 ngày làm việc</strong>.<br />
+            Rất mong tiếp tục được phục vụ bạn trong tương lai.
+        </p>
+
+
+        <h3>Thông tin đơn hàng</h3>
+        <ul class="order-info">
+            <li><strong>Người nhận:</strong> {{receiverName}}</li>
+            <li><strong>Số điện thoại:</strong> {{receiverPhone}}</li>
+            <li><strong>Địa chỉ:</strong> {{receiverAddress}}</li>
+            <li><strong>Thời gian đặt hàng:</strong> {{orderDate}} lúc {{orderTime}}</li>
+            <li><strong>Phương thức thanh toán:</strong> {{paymentName}}</li>
+        </ul>
+
+        <h3>Chi tiết đơn hàng</h3>
+        <table class="order-details">
+            <thead>
+                <tr>
+                    <th>Ảnh</th>
+                    <th>Tên sản phẩm</th>
+                    <th>Số lượng</th>
+                    <th>Đơn giá</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{orderDetails}}
+            </tbody>
+        </table>
+
+        <div class="totals">
+            <p><strong>Phí vận chuyển:</strong> {{shippingFee}} VND</p>
+            <p><strong>Thành tiền:</strong> <span>{{totalPrice}} VND</span></p>
+            <p><strong>Tổng tiền đơn hàng:</strong> <span>{{finalPrice}} VND</span></p>
+        </div>
+    </div>
+
+    <script>
+        const statusElement = document.getElementById('statusText');
+        const status = statusElement.dataset.status?.trim().toLowerCase();
+        const cancelMessage = document.getElementById('cancellationMessage');
+
+        switch (status) {
+            case 'Đang xử lý':
+                statusElement.classList.add('processing');
+                break;
+            case 'Đã hủy':
+                statusElement.classList.add('cancelled');
+                if (cancelMessage) cancelMessage.style.display = 'block';
+                break;
+            case 'Đang giao hàng':
+                statusElement.classList.add('shipping');
+                break;
+            case 'Đã giao':
+                statusElement.classList.add('delivered');
+                break;
+        }
+    </script>
+
+</body>
+
+</html>

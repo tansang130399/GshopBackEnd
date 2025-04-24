@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      color: #333;
+      max-width: 700px;
+      margin: 0 auto;
+      background-color: #fff;
+      padding: 20px;
+    }
+
+    * {
+      color: #000;
+    }
+
+    .brand-header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .brand-logo {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .greeting {
+      font-size: 16px;
+      margin-bottom: 10px;
+    }
+
+    .status {
+      font-weight: bold;
+      padding: 4px 10px;
+      border-radius: 4px;
+      display: inline-block;
+      margin-left: 5px;
+      color: #000;
+    }
+
+    h3 {
+      color: #E43727;
+      border-bottom: 2px solid #f1f1f1;
+      padding-bottom: 5px;
+      margin-top: 30px;
+    }
+
+    ul.order-info {
+      list-style: none;
+      padding-left: 0;
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    table.order-details {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      margin-top: 10px;
+    }
+
+    table.order-details thead {
+      background-color: #fcebea;
+    }
+
+    table.order-details th,
+    table.order-details td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+
+    table.order-details tbody tr:hover {
+      background-color: #f9f9f9;
+    }
+
+    .totals {
+      margin-top: 20px;
+      font-size: 15px;
+    }
+
+    .totals span {
+      color: #E43727;
+      font-weight: bold;
+    }
+
+    .thank-you {
+      margin-top: 30px;
+      font-size: 15px;
+    }
+
+    .brand {
+      color: #E43727;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="body">
+    <p class="greeting">Xin chào <span class="brand">{{userName}}</span>,</p>
+
+    {{statusContent}}
+
+    <h3>Thông tin đơn hàng</h3>
+    <ul class="order-info">
+      <li><strong>Người nhận:</strong> {{receiverName}}</li>
+      <li><strong>Số điện thoại:</strong> {{receiverPhone}}</li>
+      <li><strong>Địa chỉ:</strong> {{receiverAddress}}</li>
+      <li><strong>Thời gian đặt hàng:</strong> {{orderDate}} lúc {{orderTime}}</li>
+      <li><strong>Phương thức thanh toán:</strong> {{paymentName}}</li>
+    </ul>
+
+    <h3>Chi tiết đơn hàng</h3>
+    <table class="order-details">
+      <thead>
+        <tr>
+          <th>Ảnh</th>
+          <th>Tên sản phẩm</th>
+          <th>Số lượng</th>
+          <th>Đơn giá</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{orderDetails}}
+      </tbody>
+    </table>
+
+    <div class="totals">
+      <p><strong>Phí vận chuyển:</strong> {{shippingFee}} VND</p>
+      <p><strong>Thành tiền:</strong> <span>{{totalPrice}} VND</span></p>
+      <p><strong>Tổng tiền đơn hàng:</strong> <span>{{finalPrice}} VND</span></p>
+    </div>
+
+    <p class="thank-you">Cảm ơn bạn đã mua hàng tại <span class="brand">GShop</span>!</p>
+  </div>
+</body>
+
+</html>
