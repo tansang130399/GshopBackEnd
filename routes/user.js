@@ -338,7 +338,7 @@ router.put("/forgotPass", async (req, res) => {
   try {
     const { email, newPassword, confirmPassword } = req.body;
 
-    if (!email || !newPassword || !confirmPassword){
+    if (!email || !newPassword || !confirmPassword) {
       return res.status(400).json({ status: false, message: "Thiếu thông tin" });
     }
 
@@ -348,18 +348,18 @@ router.put("/forgotPass", async (req, res) => {
     // }
 
     const user = await userModel.findOne({ email });
-    if(!user){
+    if (!user) {
       return res.status(404).json({ status: false, message: "Người dùng không tồn tại" });
     }
 
-    await userModel.findByIdAndUpdate(user._id, {password: newPassword});
+    await userModel.findByIdAndUpdate(user._id, { password: newPassword });
     //delete otpStore[email]; // Xoá mã đã dùng
 
     return res.status(200).json({ status: true, message: "Đổi mật khẩu thành công" });
   } catch (e) {
     return res.status(500).json({ status: false, message: "Đổi mật khẩu thất bại" });
   }
-})
+});
 
 //* Đổi mật khẩu
 router.put("/changPass", async (req, res) => {

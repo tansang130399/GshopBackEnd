@@ -5,11 +5,33 @@ const detailOrderModel = require("../models/detailOrderModel");
 const cartModel = require("../models/cartModel");
 const productModel = require("../models/productModel");
 const categoryModel = require("../models/categoryModel");
+const { JWT } = require("google-auth-library");
 
 //* /order
 //* lấy tất cả đơn hàng
 router.get("/list", async (req, res, next) => {
   try {
+    const getAccessToken = () => {
+      return new Promise(function (resolve, reject) {
+        //todo sửa thành file của gshop
+        const key = require("../utils/demos-1cf27-firebase-adminsdk-fbsvc-c85c970230.json");
+        const jwtClient = new JWT(
+          key.client_email,
+          null,
+          key.private_key,
+          ["https://www.googleapis.com/auth/cloud-platform"],
+          null
+        );
+        jwtClient.authorize(function (err, tokens) {
+          if (err) {
+            reject(err);
+            return;
+          }
+          resolve(tokens.access_token);
+        });
+      });
+    };
+    console.log(await getAccessToken());
     var data = await orderModel.find();
     if (data) {
       res.json({ status: true, data: data });
@@ -209,57 +231,101 @@ router.get("/list-delivered", async (req, res) => {
   }
 });
 
-//* doanh thu 7 ngày trước, 30 ngày trước, từ trước đến nay
+// Hàm định dạng ngày theo dd/mm/yyyy
+const formatDate = (date) => {
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+  return `${day}/${month}/${year}`;
+};
+
+//* doanh thu 7 ngày trước, 28 ngày trước, 60 ngày trước, 365 ngày trước, từ trước đến nay
 router.get("/revenue", async (req, res) => {
   try {
     const today = new Date();
-    today.setHours(23, 59, 59, 999);
+    const todayFormatted = formatDate(today);
 
-    // Tính ngày bắt đầu cho mỗi khoảng thời gian
-    const sevenDaysAgo = new Date(today);
-    sevenDaysAgo.setDate(today.getDate() - 7);
-    sevenDaysAgo.setHours(0, 0, 0, 0);
+    const allCompletedOrders = await orderModel.find({
+      status: "Đã giao",
+    });
 
-    const thirtyDaysAgo = new Date(today);
-    thirtyDaysAgo.setDate(today.getDate() - 30);
-    thirtyDaysAgo.setHours(0, 0, 0, 0);
-
-    // Chuyển đổi các ngày sang định dạng "DD/MM/YYYY" (en-GB) để phù hợp với format lưu trong DB
-    const formatDate = (date) => {
-      return date.toLocaleDateString("en-GB");
+    // Convert định dạng date string sang Date object
+    const parseDateString = (dateStr) => {
+      const [day, month, year] = dateStr.split("/").map(Number);
+      return new Date(year, month - 1, day); // month trong JS bắt đầu từ 0
     };
 
-    const todayFormatted = formatDate(today);
-    const sevenDaysAgoFormatted = formatDate(sevenDaysAgo);
-    const thirtyDaysAgoFormatted = formatDate(thirtyDaysAgo);
+    // Tính các mốc thời gian
+    const sevenDaysAgo = new Date(today);
+    sevenDaysAgo.setDate(today.getDate() - 7);
 
-    // 0. Doanh thu hôm nay
-    const toDayOrders = await orderModel.find({
-      date: todayFormatted,
-      status: "Đã giao",
+    const twentyEightDaysAgo = new Date(today);
+    twentyEightDaysAgo.setDate(today.getDate() - 28);
+
+    const sixtyDaysAgo = new Date(today);
+    sixtyDaysAgo.setDate(today.getDate() - 60);
+
+    const threeSixtyFiveDaysAgo = new Date(today);
+    threeSixtyFiveDaysAgo.setDate(today.getDate() - 365);
+
+    // Lọc đơn hàng theo khoảng thời gian
+    const toDayOrders = allCompletedOrders.filter((order) => order.date === todayFormatted);
+
+    const last7DaysOrders = allCompletedOrders.filter((order) => {
+      const orderDate = parseDateString(order.date);
+      return orderDate >= sevenDaysAgo && orderDate <= today;
     });
 
+    const last28DaysOrders = allCompletedOrders.filter((order) => {
+      const orderDate = parseDateString(order.date);
+      return orderDate >= twentyEightDaysAgo && orderDate <= today;
+    });
+
+    const last60DaysOrders = allCompletedOrders.filter((order) => {
+      const orderDate = parseDateString(order.date);
+      return orderDate >= sixtyDaysAgo && orderDate <= today;
+    });
+
+    const last365DaysOrders = allCompletedOrders.filter((order) => {
+      const orderDate = parseDateString(order.date);
+      return orderDate >= threeSixtyFiveDaysAgo && orderDate <= today;
+    });
+
+    // Tính tổng doanh thu cho từng giai đoạn
     const toDayRevenue = toDayOrders.reduce((total, order) => total + order.total_price, 0);
-
-    // 1. Tính doanh thu 7 ngày gần đây
-    const last7DaysOrders = await orderModel.find({
-      date: {
-        $gte: sevenDaysAgoFormatted,
-        $lt: todayFormatted,
-      },
-      status: "Đã giao",
-    });
-
     const last7DaysRevenue = last7DaysOrders.reduce(
       (total, order) => total + order.total_price,
       0
     );
+    const last28DaysRevenue = last28DaysOrders.reduce(
+      (total, order) => total + order.total_price,
+      0
+    );
+    const last60DaysRevenue = last60DaysOrders.reduce(
+      (total, order) => total + order.total_price,
+      0
+    );
+    const last365DaysRevenue = last365DaysOrders.reduce(
+      (total, order) => total + order.total_price,
+      0
+    );
+    const totalRevenue = allCompletedOrders.reduce((total, order) => total + order.total_price, 0);
 
-    // Doanh thu theo từng ngày trong 7 ngày gần đây
+    // Log để debug
+    console.log("Orders counts:", {
+      today: toDayOrders.length,
+      last7Days: last7DaysOrders.length,
+      last28Days: last28DaysOrders.length,
+      last60Days: last60DaysOrders.length,
+      last365Days: last365DaysOrders.length,
+      total: allCompletedOrders.length,
+    });
+
+    // Tính doanh thu theo ngày trong 7 ngày gần đây
     const dailyRevenueLast7Days = {};
     const last7DaysArray = [];
 
-    for (let i = 1; i <= 7; i++) {
+    for (let i = 0; i < 7; i++) {
       const date = new Date(today);
       date.setDate(today.getDate() - i);
       const dateFormatted = formatDate(date);
@@ -273,27 +339,6 @@ router.get("/revenue", async (req, res) => {
       }
     });
 
-    // 2. Tính doanh thu 30 ngày gần đây
-    const last30DaysOrders = await orderModel.find({
-      date: {
-        $gte: thirtyDaysAgoFormatted,
-        $lt: todayFormatted,
-      },
-      status: "Đã giao",
-    });
-
-    const last30DaysRevenue = last30DaysOrders.reduce(
-      (total, order) => total + order.total_price,
-      0
-    );
-
-    // 3. Tính tổng doanh thu từ trước đến nay
-    const allCompletedOrders = await orderModel.find({
-      status: "Đã giao",
-    });
-
-    const totalRevenue = allCompletedOrders.reduce((total, order) => total + order.total_price, 0);
-
     // Tính doanh thu theo tháng trong năm hiện tại
     const currentYear = today.getFullYear();
     const monthlyRevenue = {};
@@ -305,32 +350,30 @@ router.get("/revenue", async (req, res) => {
     }
 
     allCompletedOrders.forEach((order) => {
-      const orderDate = order.date.split("/").map((part) => parseInt(part, 10));
-      const orderMonth = orderDate[1] - 1; // Tháng trong JS bắt đầu từ 0
-      const orderYear = orderDate[2];
+      const [day, month, year] = order.date.split("/").map(Number);
 
-      if (orderYear === currentYear) {
-        const monthName = new Date(currentYear, orderMonth, 1).toLocaleString("vi-VN", {
+      if (year === currentYear) {
+        const monthName = new Date(year, month - 1, 1).toLocaleString("vi-VN", {
           month: "long",
         });
         monthlyRevenue[monthName] += order.total_price;
       }
     });
 
-    // Tính số đơn hàng đã hoàn thành
-    const totalCompletedOrders = allCompletedOrders.length;
-
+    // Trả về kết quả
     return res.json({
       status: true,
       data: {
         toDayRevenue,
         toDayOrders: toDayOrders.length,
         last7DaysRevenue,
-        last30DaysRevenue,
+        last28DaysRevenue,
+        last60DaysRevenue,
+        last365DaysRevenue,
         totalRevenue,
         dailyRevenueLast7Days,
         monthlyRevenue,
-        totalCompletedOrders,
+        totalCompletedOrders: allCompletedOrders.length,
       },
     });
   } catch (error) {
@@ -342,7 +385,7 @@ router.get("/revenue", async (req, res) => {
 });
 
 //* doanh thu từ ngày đến ngày ("dd/mm/yyyy")
-router.get("/revenue-daily", async (req, res) => {
+router.post("/revenue-daily", async (req, res) => {
   try {
     const { start, end } = req.body; //data mẫu { "start": "01/03/2025", "end": "06/03/2025"}
 
