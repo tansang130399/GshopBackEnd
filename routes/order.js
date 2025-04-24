@@ -17,27 +17,27 @@ const { JWT } = require("google-auth-library");
 //* lấy tất cả đơn hàng
 router.get("/list", async (req, res, next) => {
   try {
-    const getAccessToken = () => {
-      return new Promise(function (resolve, reject) {
-        //todo sửa thành file của gshop
-        const key = require("../utils/demos-1cf27-firebase-adminsdk-fbsvc-c85c970230.json");
-        const jwtClient = new JWT(
-          key.client_email,
-          null,
-          key.private_key,
-          ["https://www.googleapis.com/auth/cloud-platform"],
-          null
-        );
-        jwtClient.authorize(function (err, tokens) {
-          if (err) {
-            reject(err);
-            return;
-          }
-          resolve(tokens.access_token);
-        });
-      });
-    };
-    console.log(await getAccessToken());
+    // const getAccessToken = () => {
+    //   return new Promise(function (resolve, reject) {
+    //     //todo sửa thành file của gshop
+    //     const key = require("../utils/demos-1cf27-firebase-adminsdk-fbsvc-c85c970230.json");
+    //     const jwtClient = new JWT(
+    //       key.client_email,
+    //       null,
+    //       key.private_key,
+    //       ["https://www.googleapis.com/auth/cloud-platform"],
+    //       null
+    //     );
+    //     jwtClient.authorize(function (err, tokens) {
+    //       if (err) {
+    //         reject(err);
+    //         return;
+    //       }
+    //       resolve(tokens.access_token);
+    //     });
+    //   });
+    // };
+    // console.log(await getAccessToken());
     var data = await orderModel.find();
     if (data) {
       res.json({ status: true, data: data });
@@ -353,7 +353,7 @@ router.get("/list-delivered", async (req, res) => {
   }
 });
 
-// Hàm định dạng ngày theo dd/mm/yyyy
+//todo: Hàm định dạng ngày theo dd/mm/yyyy
 const formatDate = (date) => {
   const day = String(date.getDate()).padStart(2, "0");
   const month = String(date.getMonth() + 1).padStart(2, "0");
