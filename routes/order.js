@@ -268,6 +268,14 @@ router.put("/update/:id_order", async (req, res, next) => {
       orderDetails.map(async (detail) => {
         const product = await productModel.findById(detail.id_product);
         const imageProduct = await imageProductModel.findOne({ id_product: detail.id_product });
+        //Hoàn sl của sp khi hủy đơn hàng
+        if (status == "Đã hủy") {
+          await productModel.findByIdAndUpdate(
+            detail.id_product,
+            { $inc: { quantity: +detail.quantity } },
+            { new: true }
+          );
+        }
         return {
           ...detail._doc,
           productName: product ? product.name : "Không xác định",
