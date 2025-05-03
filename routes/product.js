@@ -58,7 +58,7 @@ router.post("/create", async (req, res, next) => {
   try {
     const { name, price, quantity, description, id_category, id_supplier, isActive } = req.body;
 
-    if (price <= 0 || quantity <= 0) {
+    if (price <= 0 || quantity < 0) {
       return res.json({ status: false, mess: "Sai định dạng" });
     }
 
@@ -90,7 +90,7 @@ router.put("/update/:id", async (req, res, next) => {
     const { id } = req.params;
     const { name, price, quantity, description, id_category, id_supplier, isActive } = req.body;
 
-    if (price <= 0 || quantity <= 0) {
+    if (price <= 0 || quantity < 0) {
       return res.json({ status: false, mess: "Sai định dạng" });
     }
 
