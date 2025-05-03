@@ -62,7 +62,14 @@ router.post("/create", async (req, res, next) => {
       return res.json({ status: false, mess: "Sai định dạng" });
     }
 
-    if (!name || !price || !quantity || !id_category || !id_supplier || isActive == undefined) {
+    if (
+      !name ||
+      !price ||
+      quantity == undefined ||
+      !id_category ||
+      !id_supplier ||
+      isActive == undefined
+    ) {
       return res.json({ status: false, mess: "Thiếu dữ liệu đầu vào" });
     }
 
@@ -94,7 +101,14 @@ router.put("/update/:id", async (req, res, next) => {
       return res.json({ status: false, mess: "Sai định dạng" });
     }
 
-    if (!name || !price || !quantity || !id_category || !id_supplier || isActive == undefined) {
+    if (
+      !name ||
+      !price ||
+      quantity == undefined ||
+      !id_category ||
+      !id_supplier ||
+      isActive == undefined
+    ) {
       return res.json({ status: false, mess: "Thiếu dữ liệu đầu vào" });
     }
 
