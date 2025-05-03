@@ -39,6 +39,11 @@ const orderSchema = new Schema({
     required: true,
     unique: true,
   },
+  staff_mail: {
+    type: String,
+    unique: true,
+    default: "",
+  },
 });
 
 // Middleware: Cộng shipping_fee vào total_price trước khi lưu
